@@ -1,12 +1,14 @@
 package com.example.WeddingVenderMngSystem.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Email;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 
@@ -21,6 +23,9 @@ public class User implements UserDetails {
 
     private String email;
     private String password;
+
+    private String otpCode; // OTP field
+    private LocalDateTime otpExpiration; // Expiration time for OTP
 
     @Column(nullable = false, unique = true)
     private String username;
@@ -38,7 +43,7 @@ public class User implements UserDetails {
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL)
     private Vendor vendor;
 
-    private boolean enabled = true;
+    private boolean enabled = false;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
@@ -87,4 +92,34 @@ public class User implements UserDetails {
     public void setRole(Role role) {
         this.role = role;
     }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String getOtpCode(){
+        return this.otpCode;
+    }
+
+    public LocalDateTime getOtpExpiration(){
+        return this.otpExpiration;
+    }
+
+    public void setOtpCode(String otpCode) {
+        this.otpCode = otpCode;
+    }
+
+    public void setOtpExpiration(LocalDateTime otpExpiration) {
+        this.otpExpiration = otpExpiration;
+    }
+
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+
 }

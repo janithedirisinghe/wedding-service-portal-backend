@@ -17,6 +17,11 @@ public class Vendor {
     private String businessName;
     private String availability;
 
+    private String Location;
+    private  String BRN;
+    private String Country;
+    private String VenType;
+
     @OneToOne
     @JoinColumn(name = "user_id")
     private User user;

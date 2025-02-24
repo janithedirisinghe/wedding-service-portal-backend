@@ -21,16 +21,36 @@ public class UserService {
         this.passwordEncoder = passwordEncoder;
     }
 
+    public String registerUser(User user) {
+        try {
+            if (userRepository.findByUsername(user.getUsername()).isPresent()) {
+                return "User already exists! Try another username.";
+            }
 
-    public void registerUser(User user) {
-        if (user.getRole() == null) {
-            user.setRole(Role.CUSTOMER); // Default role
+            if (user.getRole() == null) {
+                user.setRole(Role.CUSTOMER); // Default role
+            }
+
+            // Encrypt the password before saving the user
+            user.setPassword(passwordEncoder.encode(user.getPassword()));
+            userRepository.save(user);
+
+            return "User registered successfully!";
+        } catch (Exception e) {
+            System.out.println(e);
         }
-        // Encrypt the password before saving the user
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
-        userRepository.save(user);
+        return "Error Occer Already used username";
     }
 
+    public User findByEmail(String email) {
+        return userRepository.findByEmail(email).orElse(null);
+    }
 
-    // No need for another password encoder method
+    public boolean userExists(String email) {
+        return userRepository.findByEmail(email).isPresent();
+    }
+
 }
+
+
+
