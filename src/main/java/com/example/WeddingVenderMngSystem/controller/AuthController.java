@@ -6,8 +6,10 @@ import com.example.WeddingVenderMngSystem.dto.LoginDto;
 import com.example.WeddingVenderMngSystem.dto.OtpVerificationRequest;
 import com.example.WeddingVenderMngSystem.entity.Role;
 import com.example.WeddingVenderMngSystem.entity.User;
+import com.example.WeddingVenderMngSystem.entity.Vendor;
 import com.example.WeddingVenderMngSystem.security.JwtUtil;
 import com.example.WeddingVenderMngSystem.service.UserService;
+import com.example.WeddingVenderMngSystem.service.VendorService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -15,10 +17,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 @RestController
 @RequestMapping("/auth")
@@ -38,6 +37,9 @@ public class AuthController {
 
     @Autowired
     private EmailService emailService;
+
+    @Autowired
+    private VendorService vendorService;
 
     @PostMapping("/login")
     public String login(@RequestBody LoginDto loginDto) {
@@ -72,9 +74,9 @@ public class AuthController {
         user.setEnabled(false); // Initially disabled
 
         // Attempt registration
-        String result = userService.registerUser(user);
+        Optional<User> result = userService.registerUser(user);
         if (result.equals("User already exists! Try another username.")) {
-            return ResponseEntity.badRequest().body(Collections.singletonMap("error", result));
+            return ResponseEntity.badRequest().body(Collections.singletonMap("error", "User already exists! Try another username."));
         }
 
         // Send OTP via email
@@ -82,7 +84,7 @@ public class AuthController {
 
         Map<String, String> response = new HashMap<>();
         response.put("message", "User registered successfully!");
-
+        response.put("userId", result.get().getUserId().toString());// Send userId
         return ResponseEntity.ok(response); // Return map as a JSON response
     }
 
@@ -101,6 +103,23 @@ public class AuthController {
             return ResponseEntity.ok(Collections.singletonMap("message", "Account verified successfully!"));
         } else {
             return ResponseEntity.badRequest().body(Collections.singletonMap("error", "Invalid or expired OTP!"));
+        }
+    }
+
+    @PostMapping("/vendor-complete-info")
+    public ResponseEntity<Map<String, String>> registerVendor(@RequestParam Long userId, @RequestBody Vendor vendorDetails) {
+        try {
+            Vendor savedVendor = vendorService.registerVendor(userId, vendorDetails);
+
+            Map<String, String> response = new HashMap<>();
+            response.put("message", "Vendor registered successfully!");
+            response.put("vendorId", savedVendor.getVenderId().toString());
+
+            return ResponseEntity.ok(response);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Collections.singletonMap("error", e.getMessage()));
+        } catch (IllegalStateException e) {
+            return ResponseEntity.badRequest().body(Collections.singletonMap("error", e.getMessage()));
         }
     }
 

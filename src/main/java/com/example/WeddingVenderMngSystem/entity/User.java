@@ -52,7 +52,7 @@ public class User implements UserDetails {
 
     @Override
     public String getUsername() {
-        return email;
+        return username;
     }
 
     @Override
@@ -121,5 +121,12 @@ public class User implements UserDetails {
         return email;
     }
 
+    public Long getUserId() {
+        return userId;
+    }
+
+    public Vendor getVendor() {
+        return vendor;
+    }
 
 }

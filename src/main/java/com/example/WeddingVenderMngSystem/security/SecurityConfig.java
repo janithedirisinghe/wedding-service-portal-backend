@@ -34,6 +34,8 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)  // Disable CSRF for API requests
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/auth/**").permitAll() // Public endpoints for login/register
+                        .requestMatchers("/services/**").permitAll()
+                        .requestMatchers("/vendors/**").permitAll()
                         .requestMatchers("/admin/**").hasRole("ADMIN") // Only Admins can access /admin
                         .requestMatchers("/customer/**").hasRole("CUSTOMER") // Only Customers can access /customer
                         .requestMatchers("/vendor/**").hasRole("VENDOR") // Only Vendors can access /vendor

@@ -8,6 +8,8 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
 @Service
 public class UserService {
 
@@ -21,10 +23,10 @@ public class UserService {
         this.passwordEncoder = passwordEncoder;
     }
 
-    public String registerUser(User user) {
+    public Optional<User> registerUser(User user) {
         try {
             if (userRepository.findByUsername(user.getUsername()).isPresent()) {
-                return "User already exists! Try another username.";
+                return Optional.empty();
             }
 
             if (user.getRole() == null) {
@@ -33,13 +35,13 @@ public class UserService {
 
             // Encrypt the password before saving the user
             user.setPassword(passwordEncoder.encode(user.getPassword()));
-            userRepository.save(user);
 
-            return "User registered successfully!";
+
         } catch (Exception e) {
             System.out.println(e);
         }
-        return "Error Occer Already used username";
+
+        return Optional.of(userRepository.save(user));
     }
 
     public User findByEmail(String email) {
