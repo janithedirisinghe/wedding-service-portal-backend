@@ -51,10 +51,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             return;
         }
 
-        if (requestPath.startsWith("/vendors/")) {
-            filterChain.doFilter(request, response);
-            return;
-        }
+//        if (requestPath.startsWith("/vendors/")) {
+//            filterChain.doFilter(request, response);
+//            return;
+//        }
 
         // ✅ Extract and validate JWT token
         String token = getTokenFromRequest(request);

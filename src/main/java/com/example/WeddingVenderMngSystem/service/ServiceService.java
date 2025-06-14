@@ -5,6 +5,7 @@ import com.example.WeddingVenderMngSystem.entity.Vendor;
 import com.example.WeddingVenderMngSystem.repository.ServiceRepository;
 import com.example.WeddingVenderMngSystem.repository.VendorRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 
@@ -81,5 +82,13 @@ public class ServiceService {
         dto.setPricing(service.getPricing());
         dto.setVendorId(service.getVendor().getVenderId());
         return dto;
+    }
+
+    // Get Service by VenderID
+    public List<ServiceDTO> GetServicesByVenderID(Long venderID){
+        return serviceRepository.findByVendor_VenderId(venderID).stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+
     }
 }

@@ -42,15 +42,29 @@ public class AuthController {
     private VendorService vendorService;
 
     @PostMapping("/login")
-    public String login(@RequestBody LoginDto loginDto) {
+    public ResponseEntity<Map<String, Object>> login(@RequestBody LoginDto loginDto) {
         // Authenticate user
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(loginDto.getUsername(), loginDto.getPassword())
         );
 
+        // Retrieve user details
+        User user = userService.findByUsername(loginDto.getUsername());
+        if (user == null) {
+            return ResponseEntity.badRequest().body(Collections.singletonMap("error", "User not found!"));
+        }
+
         // Generate JWT Token
         String token = jwtUtil.generateToken(loginDto.getUsername());
-        return "Bearer " + token;
+
+        // Prepare response
+        Map<String, Object> response = new HashMap<>();
+        response.put("token", "Bearer " + token);
+        response.put("userId", user.getUserId());
+        response.put("username", user.getUsername());
+        response.put("role", user.getRole().toString());
+
+        return ResponseEntity.ok(response);
     }
 
     @PostMapping("/register")
