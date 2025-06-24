@@ -43,7 +43,6 @@ public class ServiceDTO {
     public Long getVendorId() {
         return vendorId;
     }
-    
 
     public void setVendorId(Long vendorId) {
         this.vendorId = vendorId;

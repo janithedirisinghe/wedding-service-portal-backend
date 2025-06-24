@@ -10,7 +10,9 @@ import com.example.WeddingVenderMngSystem.entity.Vendor;
 import com.example.WeddingVenderMngSystem.security.JwtUtil;
 import com.example.WeddingVenderMngSystem.service.UserService;
 import com.example.WeddingVenderMngSystem.service.VendorService;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -42,7 +44,7 @@ public class AuthController {
     private VendorService vendorService;
 
     @PostMapping("/login")
-    public ResponseEntity<Map<String, Object>> login(@RequestBody LoginDto loginDto) {
+    public ResponseEntity<Map<String, Object>> login(@RequestBody LoginDto loginDto, HttpServletResponse response) {
         // Authenticate user
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(loginDto.getUsername(), loginDto.getPassword())
@@ -57,14 +59,23 @@ public class AuthController {
         // Generate JWT Token
         String token = jwtUtil.generateToken(loginDto.getUsername());
 
-        // Prepare response
-        Map<String, Object> response = new HashMap<>();
-        response.put("token", "Bearer " + token);
-        response.put("userId", user.getUserId());
-        response.put("username", user.getUsername());
-        response.put("role", user.getRole().toString());
+        ResponseCookie cookie = ResponseCookie.from("auth_token", token)
+                .httpOnly(true)
+                .secure(false)
+                .path("/")
+                .maxAge(60*60)
+                .sameSite("Strict")
+                .build();
+        response.setHeader("Set-Cookie", cookie.toString());
 
-        return ResponseEntity.ok(response);
+        // Prepare response
+        Map<String, Object> responseBody = new HashMap<>();
+        responseBody.put("message", "Login successful");
+        responseBody.put("userId", user.getUserId());
+        responseBody.put("username", user.getUsername());
+        responseBody.put("role", user.getRole().toString());
+
+        return ResponseEntity.ok(responseBody);
     }
 
     @PostMapping("/register")
