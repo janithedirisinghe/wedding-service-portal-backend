@@ -50,6 +50,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             return;
         }
 
+        if (requestPath.startsWith("/posts/")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
 //        if (requestPath.startsWith("/vendors/")) {
 //            filterChain.doFilter(request, response);
 //            return;
