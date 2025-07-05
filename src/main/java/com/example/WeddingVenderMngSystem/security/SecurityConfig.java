@@ -46,6 +46,7 @@ public class SecurityConfig {
                         .requestMatchers("/auth/**").permitAll() // Public endpoints for login/register
                         .requestMatchers("/services/**").permitAll()
                         .requestMatchers("/vendors/**").permitAll()
+                        .requestMatchers("/posts/**").permitAll()
                         .requestMatchers("/admin/**").hasRole("ADMIN") // Only Admins can access /admin
                         .requestMatchers("/customer/**").hasRole("CUSTOMER") // Only Customers can access /customer
                         .requestMatchers("/vendor/**").hasRole("VENDOR") // Only Vendors can access /vendor

@@ -83,6 +83,10 @@ public class Vendor {
         return venderId;
     }
 
+    public void setVenderId(Long venderId) {
+        this.venderId = venderId;
+    }
+
     public String getBusinessName() {
         return businessName;
     }
