@@ -2,14 +2,17 @@ package com.example.WeddingVenderMngSystem.controller;
 
 import com.example.WeddingVenderMngSystem.common.EmailService;
 import com.example.WeddingVenderMngSystem.common.OtpService;
+import com.example.WeddingVenderMngSystem.dto.CustomerDTO;
 import com.example.WeddingVenderMngSystem.dto.LoginDto;
 import com.example.WeddingVenderMngSystem.dto.OtpVerificationRequest;
 import com.example.WeddingVenderMngSystem.entity.Role;
 import com.example.WeddingVenderMngSystem.entity.User;
 import com.example.WeddingVenderMngSystem.entity.Vendor;
+import com.example.WeddingVenderMngSystem.entity.Customer;
 import com.example.WeddingVenderMngSystem.security.JwtUtil;
 import com.example.WeddingVenderMngSystem.service.UserService;
 import com.example.WeddingVenderMngSystem.service.VendorService;
+import com.example.WeddingVenderMngSystem.service.CustomerService;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseCookie;
@@ -42,6 +45,9 @@ public class AuthController {
 
     @Autowired
     private VendorService vendorService;
+
+    @Autowired
+    private CustomerService customerService;
 
     @PostMapping("/login")
     public ResponseEntity<Map<String, Object>> login(@RequestBody LoginDto loginDto, HttpServletResponse response) {
@@ -148,4 +154,35 @@ public class AuthController {
         }
     }
 
+    @PostMapping("/customer-complete-info")
+    public ResponseEntity<Map<String, String>> registerCustomer(@RequestParam Long userId, @RequestBody Customer customerDetails) {
+        try {
+            Customer savedCustomer = customerService.registerCustomer(userId, customerDetails);
+
+            Map<String, String> response = new HashMap<>();
+            response.put("message", "Customer registered successfully!");
+            response.put("customerId", savedCustomer.getCustomerId().toString());
+
+            return ResponseEntity.ok(response);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Collections.singletonMap("error", e.getMessage()));
+        } catch (IllegalStateException e) {
+            return ResponseEntity.badRequest().body(Collections.singletonMap("error", e.getMessage()));
+        }
+    }
+
+    @GetMapping("/customer-profile")
+    public ResponseEntity<Map<String, Object>> getCustomerProfile(@RequestParam Long userId) {
+        try {
+            CustomerDTO customer = customerService.getCustomerDTOByUserId(userId);
+            
+            Map<String, Object> response = new HashMap<>();
+            response.put("customer", customer);
+            response.put("message", "Customer profile retrieved successfully!");
+            
+            return ResponseEntity.ok(response);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Collections.singletonMap("error", e.getMessage()));
+        }
+    }
 }

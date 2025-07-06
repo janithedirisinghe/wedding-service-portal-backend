@@ -1,20 +1,18 @@
-package com.example.WeddingVenderMngSystem.entity;
+package com.example.WeddingVenderMngSystem.dto;
 
-import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
 import java.util.Date;
 import java.util.List;
 
-@Entity
-@Table(name = "customers")
-@Getter
-@Setter
-public class Customer {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class CustomerDTO {
     private Long customerId;
-
+    
     // Personal Information
     private String firstName;
     private String lastName;
@@ -33,10 +31,11 @@ public class Customer {
     private String budget; // Changed from Double to String for budget ranges
     
     // Vendor Preferences
-    @ElementCollection
-    @CollectionTable(name = "customer_preferred_vendors", joinColumns = @JoinColumn(name = "customer_id"))
-    @Column(name = "vendor_type")
     private List<String> preferredVendorTypes;
+
+    // User Information
+    private String userName;
+    private String userEmail;
 
     public Long getCustomerId() {
         return customerId;
@@ -142,27 +141,19 @@ public class Customer {
         this.preferredVendorTypes = preferredVendorTypes;
     }
 
-    public User getUser() {
-        return user;
+    public String getUserName() {
+        return userName;
     }
 
-    public void setUser(User user) {
-        this.user = user;
+    public void setUserName(String userName) {
+        this.userName = userName;
     }
 
-    public List<Follower> getFollowers() {
-        return followers;
+    public String getUserEmail() {
+        return userEmail;
     }
 
-    public void setFollowers(List<Follower> followers) {
-        this.followers = followers;
+    public void setUserEmail(String userEmail) {
+        this.userEmail = userEmail;
     }
-
-    @OneToOne
-    @JoinColumn(name = "user_id")
-    private User user;
-
-    // Follower relationships
-    @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<Follower> followers;
 }

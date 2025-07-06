@@ -41,6 +41,10 @@ public class Vendor {
     @JoinColumn(name = "admin_id")
     private Admin admin;
 
+    // Follower relationships
+    @OneToMany(mappedBy = "vendor", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<Follower> followers;
+
     public void setUser(User user) {
         this.user = user;
     }
@@ -129,5 +133,13 @@ public class Vendor {
 
     public Admin getAdmin() {
         return admin;
+    }
+
+    public List<Follower> getFollowers() {
+        return followers;
+    }
+
+    public void setFollowers(List<Follower> followers) {
+        this.followers = followers;
     }
 }
