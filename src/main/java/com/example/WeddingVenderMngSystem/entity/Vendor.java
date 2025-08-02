@@ -43,6 +43,7 @@ public class Vendor {
 
     // Follower relationships
     @OneToMany(mappedBy = "vendor", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonIgnore
     private List<Follower> followers;
 
     public void setUser(User user) {

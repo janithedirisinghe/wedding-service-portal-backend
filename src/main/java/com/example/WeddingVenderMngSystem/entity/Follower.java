@@ -1,5 +1,6 @@
 package com.example.WeddingVenderMngSystem.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -20,6 +21,7 @@ public class Follower {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "vendor_id", nullable = false)
+    @JsonIgnore
     private Vendor vendor;
 
     @Column(name = "followed_at", nullable = false)

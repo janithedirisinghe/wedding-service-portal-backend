@@ -51,7 +51,8 @@ public class SecurityConfig {
                         .requestMatchers("/customer/**").hasRole("CUSTOMER") // Only Customers can access /customer
                         .requestMatchers("/vendor/**").hasRole("VENDOR") // Only Vendors can access /vendor
                         .requestMatchers("/public/**").permitAll() // Public endpoints
-                        .requestMatchers("/api/followers/**").permitAll() // Allow public access to follower endpoints
+                        .requestMatchers("/api/followers/**").permitAll()
+                        .requestMatchers("/api/reviews/**").permitAll()// Allow public access to follower endpoints
                         .anyRequest().authenticated() // All other endpoints require authentication
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
