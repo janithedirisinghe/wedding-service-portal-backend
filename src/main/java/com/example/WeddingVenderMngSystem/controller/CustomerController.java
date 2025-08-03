@@ -6,6 +6,7 @@ import com.example.WeddingVenderMngSystem.service.CustomerService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Map;
@@ -44,13 +45,23 @@ public class CustomerController {
         }
     }
 
-    @PutMapping("/editCustomer/{userId}")
-    public ResponseEntity<CustomerDTO> updateCustomer(@PathVariable Long userId, @RequestBody CustomerDTO customerDTO) {
+    @PutMapping(value = "/editCustomer/{userId}", consumes = {"multipart/form-data"})
+    public ResponseEntity<CustomerDTO> updateCustomer(
+            @PathVariable Long userId, 
+            @RequestPart("customer") CustomerDTO customerDTO,
+            @RequestPart(value = "profileImage", required = false) MultipartFile profileImage) {
         try {
-            CustomerDTO updatedCustomer = customerService.updateCustomerByUserId(userId, customerDTO);
+            CustomerDTO updatedCustomer;
+            if (profileImage != null && !profileImage.isEmpty()) {
+                updatedCustomer = customerService.updateCustomerWithImageByUserId(userId, customerDTO, profileImage);
+            } else {
+                updatedCustomer = customerService.updateCustomerByUserId(userId, customerDTO);
+            }
             return ResponseEntity.ok(updatedCustomer);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.notFound().build();
+        } catch (Exception e) {
+            return ResponseEntity.status(500).build();
         }
     }
 

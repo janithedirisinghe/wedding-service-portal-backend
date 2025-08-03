@@ -30,6 +30,9 @@ public class CustomerDTO {
     private Date weddingDate;
     private String budget; // Changed from Double to String for budget ranges
     
+    // Profile Image
+    private String profileImageUrl;
+    
     // Vendor Preferences
     private List<String> preferredVendorTypes;
 
@@ -131,6 +134,14 @@ public class CustomerDTO {
 
     public void setBudget(String budget) {
         this.budget = budget;
+    }
+
+    public String getProfileImageUrl() {
+        return profileImageUrl;
+    }
+
+    public void setProfileImageUrl(String profileImageUrl) {
+        this.profileImageUrl = profileImageUrl;
     }
 
     public List<String> getPreferredVendorTypes() {

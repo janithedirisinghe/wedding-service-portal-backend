@@ -33,6 +33,9 @@ public class Customer {
     private Date weddingDate;
     private String budget; // Changed from Double to String for budget ranges
     
+    // Profile Image
+    private String profileImageUrl;
+    
     // Vendor Preferences
     @ElementCollection
     @CollectionTable(name = "customer_preferred_vendors", joinColumns = @JoinColumn(name = "customer_id"))
@@ -133,6 +136,14 @@ public class Customer {
 
     public void setBudget(String budget) {
         this.budget = budget;
+    }
+
+    public String getProfileImageUrl() {
+        return profileImageUrl;
+    }
+
+    public void setProfileImageUrl(String profileImageUrl) {
+        this.profileImageUrl = profileImageUrl;
     }
 
     public List<String> getPreferredVendorTypes() {

@@ -7,6 +7,7 @@ import com.example.WeddingVenderMngSystem.repository.CustomerRepository;
 import com.example.WeddingVenderMngSystem.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Optional;
@@ -20,6 +21,9 @@ public class CustomerService {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private SupabaseStorageService supabaseStorageService;
 
     public Customer registerCustomer(Long userId, Customer customerDetails) {
         // Check if user exists
@@ -89,6 +93,11 @@ public class CustomerService {
         customer.setWeddingDate(customerDTO.getWeddingDate());
         customer.setBudget(customerDTO.getBudget());
         
+        // Profile Image (only update if provided in DTO)
+        if (customerDTO.getProfileImageUrl() != null) {
+            customer.setProfileImageUrl(customerDTO.getProfileImageUrl());
+        }
+        
         // Vendor Preferences
         customer.setPreferredVendorTypes(customerDTO.getPreferredVendorTypes());
         
@@ -116,8 +125,53 @@ public class CustomerService {
         customer.setWeddingDate(customerDTO.getWeddingDate());
         customer.setBudget(customerDTO.getBudget());
         
+        // Profile Image (only update if provided in DTO)
+        if (customerDTO.getProfileImageUrl() != null) {
+            customer.setProfileImageUrl(customerDTO.getProfileImageUrl());
+        }
+        
         // Vendor Preferences
         customer.setPreferredVendorTypes(customerDTO.getPreferredVendorTypes());
+        
+        Customer updatedCustomer = customerRepository.save(customer);
+        return convertToDTO(updatedCustomer);
+    }
+
+    public CustomerDTO updateCustomerWithImageByUserId(Long userId, CustomerDTO customerDTO, MultipartFile profileImage) {
+        Customer customer = getCustomerByUserId(userId);
+        
+        // Personal Information
+        customer.setFirstName(customerDTO.getFirstName());
+        customer.setLastName(customerDTO.getLastName());
+        customer.setDateOfBirth(customerDTO.getDateOfBirth());
+        customer.setPhoneNumber(customerDTO.getPhoneNumber());
+        customer.setBio(customerDTO.getBio());
+        
+        // Address Information
+        customer.setAddress(customerDTO.getAddress());
+        customer.setCity(customerDTO.getCity());
+        customer.setCountry(customerDTO.getCountry());
+        customer.setLocation(customerDTO.getLocation());
+        
+        // Wedding Information
+        customer.setWeddingDate(customerDTO.getWeddingDate());
+        customer.setBudget(customerDTO.getBudget());
+        
+        // Vendor Preferences
+        customer.setPreferredVendorTypes(customerDTO.getPreferredVendorTypes());
+        
+        // Handle profile image upload
+        if (profileImage != null && !profileImage.isEmpty()) {
+            try {
+                String fileName = "customer_profile_" + userId + "_" + System.currentTimeMillis() + "_" + 
+                                profileImage.getOriginalFilename().replaceAll("[^a-zA-Z0-9\\.\\-]", "_");
+                String imageUrl = supabaseStorageService.uploadFile(profileImage, fileName);
+                customer.setProfileImageUrl(imageUrl);
+                customerDTO.setProfileImageUrl(imageUrl);
+            } catch (Exception e) {
+                throw new RuntimeException("Failed to upload profile image: " + e.getMessage());
+            }
+        }
         
         Customer updatedCustomer = customerRepository.save(customer);
         return convertToDTO(updatedCustomer);
@@ -159,6 +213,9 @@ public class CustomerService {
         // Wedding Information
         dto.setWeddingDate(customer.getWeddingDate());
         dto.setBudget(customer.getBudget());
+        
+        // Profile Image
+        dto.setProfileImageUrl(customer.getProfileImageUrl());
         
         // Vendor Preferences
         dto.setPreferredVendorTypes(customer.getPreferredVendorTypes());
