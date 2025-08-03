@@ -26,6 +26,12 @@ public class ReviewController {
         return review != null ? ResponseEntity.ok(review) : ResponseEntity.notFound().build();
     }
 
+    @GetMapping("/vendor/{vendorId}")
+    public ResponseEntity<List<ReviewDTO>> getReviewsByVendorId(@PathVariable Long vendorId) {
+        List<ReviewDTO> reviews = reviewService.getReviewsByVendorId(vendorId);
+        return ResponseEntity.ok(reviews);
+    }
+
     @PostMapping
     public ResponseEntity<ReviewDTO> createReview(@RequestBody ReviewDTO reviewDTO) {
         return ResponseEntity.ok(reviewService.createReview(reviewDTO));

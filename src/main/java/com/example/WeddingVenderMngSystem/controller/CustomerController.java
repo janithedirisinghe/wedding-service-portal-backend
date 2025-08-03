@@ -44,7 +44,7 @@ public class CustomerController {
         }
     }
 
-    @PutMapping("/{userId}")
+    @PutMapping("/editCustomer/{userId}")
     public ResponseEntity<CustomerDTO> updateCustomer(@PathVariable Long userId, @RequestBody CustomerDTO customerDTO) {
         try {
             CustomerDTO updatedCustomer = customerService.updateCustomerByUserId(userId, customerDTO);

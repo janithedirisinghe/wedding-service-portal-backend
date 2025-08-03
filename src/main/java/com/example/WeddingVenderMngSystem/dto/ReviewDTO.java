@@ -15,7 +15,7 @@ public class ReviewDTO {
     private Long reviewId;
     private int rating;
     private String comment;
-    private Long customerId;
+    private Long customerId; // Note: Frontend sends userId here, backend maps to actual customerId
     private Long vendorId;
     private Date createdAt = new Date();
     public Long getReviewId() {

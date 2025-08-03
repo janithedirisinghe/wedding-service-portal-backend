@@ -33,7 +33,6 @@ public class VendorController {
         }else {
             return (Vendor) ResponseEntity.notFound();
         }
-
     }
 
 

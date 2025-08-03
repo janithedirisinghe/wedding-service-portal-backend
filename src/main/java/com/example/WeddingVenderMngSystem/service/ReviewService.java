@@ -38,8 +38,12 @@ public class ReviewService {
         review.setComment(reviewDTO.getComment());
         review.setCreatedAt(reviewDTO.getCreatedAt());
 
-        Customer customer = customerRepository.findById(reviewDTO.getCustomerId()).orElse(null);
-        Vendor vendor = vendorRepository.findById(reviewDTO.getVendorId()).orElse(null);
+        // Find customer by user ID (sent as customerId from frontend)
+        Customer customer = customerRepository.findByUser_UserId(reviewDTO.getCustomerId())
+                .orElseThrow(() -> new RuntimeException("Customer not found for user ID: " + reviewDTO.getCustomerId()));
+        
+        Vendor vendor = vendorRepository.findById(reviewDTO.getVendorId())
+                .orElseThrow(() -> new RuntimeException("Vendor not found with ID: " + reviewDTO.getVendorId()));
 
         review.setCustomer(customer);
         review.setVendor(vendor);
@@ -53,8 +57,12 @@ public class ReviewService {
             review.setRating(reviewDTO.getRating());
             review.setComment(reviewDTO.getComment());
 
-            Customer customer = customerRepository.findById(reviewDTO.getCustomerId()).orElse(null);
-            Vendor vendor = vendorRepository.findById(reviewDTO.getVendorId()).orElse(null);
+            // Find customer by user ID (sent as customerId from frontend)
+            Customer customer = customerRepository.findByUser_UserId(reviewDTO.getCustomerId())
+                    .orElseThrow(() -> new RuntimeException("Customer not found for user ID: " + reviewDTO.getCustomerId()));
+            
+            Vendor vendor = vendorRepository.findById(reviewDTO.getVendorId())
+                    .orElseThrow(() -> new RuntimeException("Vendor not found with ID: " + reviewDTO.getVendorId()));
 
             review.setCustomer(customer);
             review.setVendor(vendor);
@@ -66,6 +74,11 @@ public class ReviewService {
 
     public void deleteReview(Long reviewId) {
         reviewRepository.deleteById(reviewId);
+    }
+
+    public List<ReviewDTO> getReviewsByVendorId(Long vendorId) {
+        List<Review> reviews = reviewRepository.findByVendor_VenderId(vendorId);
+        return reviews.stream().map(this::convertToDTO).collect(Collectors.toList());
     }
 
     private ReviewDTO convertToDTO(Review review) {
