@@ -7,4 +7,5 @@ import java.util.Optional;
 
 public interface VendorRepository extends JpaRepository<Vendor, Long> {
     Optional<Vendor> findByVenderId(Long venderId);
+    Optional<Vendor> findByUser_UserId(Long userId);
 }

@@ -27,6 +27,7 @@ public class Vendor {
     private String venType;   // Changed from "VenType" to "venType"
     private String bio;
     private String telNo;
+    private String profileImageUrl;
 
     @OneToOne
     @JsonIgnore
@@ -82,6 +83,10 @@ public class Vendor {
         this.telNo = telNo;
     }
 
+    public void setProfileImageUrl(String profileImageUrl) {
+        this.profileImageUrl = profileImageUrl;
+    }
+
 
     public Long getVenderId() {
 
@@ -118,6 +123,10 @@ public class Vendor {
 
     public String getTelNo() {
         return telNo;
+    }
+
+    public String getProfileImageUrl() {
+        return profileImageUrl;
     }
 
     public String getVenType() { return venType; }
