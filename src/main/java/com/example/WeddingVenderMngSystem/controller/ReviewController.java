@@ -1,6 +1,7 @@
 package com.example.WeddingVenderMngSystem.controller;
 
 import com.example.WeddingVenderMngSystem.dto.ReviewDTO;
+import com.example.WeddingVenderMngSystem.exception.UnauthorizedVendorAccessException;
 import com.example.WeddingVenderMngSystem.service.ReviewService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -26,10 +27,16 @@ public class ReviewController {
         return review != null ? ResponseEntity.ok(review) : ResponseEntity.notFound().build();
     }
 
-    @GetMapping("/vendor/{vendorId}")
-    public ResponseEntity<List<ReviewDTO>> getReviewsByVendorId(@PathVariable Long vendorId) {
-        List<ReviewDTO> reviews = reviewService.getReviewsByVendorId(vendorId);
-        return ResponseEntity.ok(reviews);
+    @GetMapping("/vendor/{userId}")
+    public ResponseEntity<List<ReviewDTO>> getReviewsByVendorId(@PathVariable Long userId) {
+        try {
+            List<ReviewDTO> reviews = reviewService.getReviewsByUserId(userId);
+            return ResponseEntity.ok(reviews);
+        } catch (UnauthorizedVendorAccessException e) {
+            return ResponseEntity.status(403).build(); // Forbidden - user doesn't have access to this vendor's reviews
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().build();
+        }
     }
 
     @PostMapping

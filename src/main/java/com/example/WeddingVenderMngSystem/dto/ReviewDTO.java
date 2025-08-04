@@ -16,6 +16,7 @@ public class ReviewDTO {
     private int rating;
     private String comment;
     private Long customerId; // Note: Frontend sends userId here, backend maps to actual customerId
+    private String customerName; // Customer's full name (firstName + lastName)
     private Long vendorId;
     private Date createdAt = new Date();
     public Long getReviewId() {
@@ -56,6 +57,14 @@ public class ReviewDTO {
 
     public void setCustomerId(Long customerId) {
         this.customerId = customerId;
+    }
+
+    public String getCustomerName() {
+        return customerName;
+    }
+
+    public void setCustomerName(String customerName) {
+        this.customerName = customerName;
     }
 
     public Long getVendorId() {

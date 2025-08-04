@@ -1,6 +1,7 @@
 package com.example.WeddingVenderMngSystem.controller;
 
 import com.example.WeddingVenderMngSystem.dto.PostDTO;
+import com.example.WeddingVenderMngSystem.dto.CreatePostDTO;
 import com.example.WeddingVenderMngSystem.dto.TimelinePostDTO;
 import com.example.WeddingVenderMngSystem.service.PostService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,21 +20,21 @@ public class PostController {
 
     @PostMapping(consumes = {"multipart/form-data"})
     public ResponseEntity<PostDTO> createPost(
-            @RequestPart("post") PostDTO postDto,
+            @RequestPart("post") CreatePostDTO createPostDto,
             @RequestPart("images") MultipartFile[] images
     ) {
         try {
-            PostDTO createdPost = postService.createPostWithImages(postDto, images);
+            PostDTO createdPost = postService.createPostWithImages(createPostDto, images);
             return ResponseEntity.ok(createdPost);
         } catch (Exception e) {
             return ResponseEntity.status(500).build();
         }
     }
 
-    @GetMapping("/vendor/{vendorId}")
-    public ResponseEntity<List<PostDTO>> getPostsByVendor(@PathVariable Long vendorId) {
+    @GetMapping("/vendor/{userId}")
+    public ResponseEntity<List<PostDTO>> getPostsByVendor(@PathVariable Long userId) {
         try {
-            List<PostDTO> posts = postService.getPostsByVendorId(vendorId);
+            List<PostDTO> posts = postService.getPostsByUserId(userId);
             return ResponseEntity.ok(posts);
         } catch (Exception e) {
             e.printStackTrace();
