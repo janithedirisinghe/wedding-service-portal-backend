@@ -178,4 +178,9 @@ public class Customer {
     // Follower relationships
     @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Follower> followers;
+
+    // Chat room relationships
+    @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonIgnore
+    private List<ChatRoom> chatRooms;
 }

@@ -3,10 +3,11 @@ package com.example.WeddingVenderMngSystem.security;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import javax.crypto.spec.SecretKeySpec;
+import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.util.Date;
 
@@ -14,7 +15,20 @@ import java.util.Date;
 public class JwtUtil {
 
     @Value("${jwt.secret}")
-    private static final Key SECRET_KEY = Keys.secretKeyFor(SignatureAlgorithm.HS256);
+    private String jwtSecret;
+
+    private Key getSigningKey() {
+        // Create a consistent key from the secret string
+        byte[] keyBytes = jwtSecret.getBytes(StandardCharsets.UTF_8);
+        // Ensure the key is at least 256 bits (32 bytes) for HS256
+        if (keyBytes.length < 32) {
+            // Pad the key if it's too short
+            byte[] paddedKey = new byte[32];
+            System.arraycopy(keyBytes, 0, paddedKey, 0, Math.min(keyBytes.length, 32));
+            keyBytes = paddedKey;
+        }
+        return new SecretKeySpec(keyBytes, SignatureAlgorithm.HS256.getJcaName());
+    }
 
     // Generate JWT Token
     public String generateToken(String username) {
@@ -22,7 +36,7 @@ public class JwtUtil {
                 .setSubject(username)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 10)) // 10 hours validity
-                .signWith(SECRET_KEY) // Use Secure Key
+                .signWith(getSigningKey()) // Use consistent key
                 .compact();
     }
 
@@ -44,10 +58,16 @@ public class JwtUtil {
 
     // Extract claims from JWT Token
     private Claims extractClaims(String token) {
-        return Jwts.parser()
-                .setSigningKey(SECRET_KEY)
-                .parseClaimsJws(token)
-                .getBody();
+        try {
+            return Jwts.parserBuilder()
+                    .setSigningKey(getSigningKey())
+                    .build()
+                    .parseClaimsJws(token)
+                    .getBody();
+        } catch (Exception e) {
+            System.err.println("JWT parsing error: " + e.getMessage());
+            throw e;
+        }
     }
 
     // Check if JWT Token has expired

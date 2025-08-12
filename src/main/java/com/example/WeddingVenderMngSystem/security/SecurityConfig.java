@@ -47,6 +47,8 @@ public class SecurityConfig {
                         .requestMatchers("/services/**").permitAll()
                         .requestMatchers("/vendors/**").permitAll()
                         .requestMatchers("/posts/**").permitAll()
+                        .requestMatchers("/ws/**").permitAll() // WebSocket endpoint
+                        .requestMatchers("/api/chat/**").authenticated() // Chat API requires authentication
                         .requestMatchers("/admin/**").hasRole("ADMIN") // Only Admins can access /admin
                         .requestMatchers("/customer/**").hasRole("CUSTOMER") // Only Customers can access /customer
                         .requestMatchers("/vendor/**").hasRole("VENDOR") // Only Vendors can access /vendor

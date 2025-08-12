@@ -152,4 +152,17 @@ public class Vendor {
     public void setFollowers(List<Follower> followers) {
         this.followers = followers;
     }
+
+    // Chat room relationships
+    @OneToMany(mappedBy = "vendor", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonIgnore
+    private List<ChatRoom> chatRooms;
+
+    public List<ChatRoom> getChatRooms() {
+        return chatRooms;
+    }
+
+    public void setChatRooms(List<ChatRoom> chatRooms) {
+        this.chatRooms = chatRooms;
+    }
 }
