@@ -56,6 +56,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/followers/**").permitAll()
                         .requestMatchers("/api/reviews/**").permitAll()// Allow public access to follower endpoints
                         .requestMatchers("/api/meetings/**").permitAll()
+                        .requestMatchers("/api/bookings/**").permitAll()
                         .anyRequest().authenticated() // All other endpoints require authentication
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
