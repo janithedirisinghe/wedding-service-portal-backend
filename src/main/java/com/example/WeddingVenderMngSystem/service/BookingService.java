@@ -104,6 +104,21 @@ public class BookingService {
     }
 
     /**
+     * Get accepted bookings for a customer (ready for payment)
+     */
+    public List<BookingResponseDto> getAcceptedBookingsForCustomer(Long userId) {
+        Customer customer = customerRepository.findByUser_UserId(userId)
+                .orElseThrow(() -> new RuntimeException("Customer not found for user ID: " + userId));
+        
+        List<Booking> bookings = bookingRepository.findByCustomer_CustomerIdAndStatus(
+                customer.getCustomerId(), BookingStatus.ACCEPTED);
+        
+        return bookings.stream()
+                .map(this::convertToResponseDto)
+                .collect(Collectors.toList());
+    }
+
+    /**
      * Vendor accepts or rejects a booking
      */
     public BookingResponseDto respondToBooking(Long userId, Long bookingId, BookingDecisionDto decisionDto) {

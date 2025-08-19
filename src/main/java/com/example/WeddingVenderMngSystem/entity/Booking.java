@@ -48,6 +48,9 @@ public class Booking {
     @JoinColumn(name = "service_id", nullable = false)
     private Service service;
 
+    @OneToOne(mappedBy = "booking", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private Payment payment;
+
     // Constructors
     public Booking() {}
 
@@ -157,5 +160,13 @@ public class Booking {
 
     public void setService(Service service) {
         this.service = service;
+    }
+
+    public Payment getPayment() {
+        return payment;
+    }
+
+    public void setPayment(Payment payment) {
+        this.payment = payment;
     }
 }

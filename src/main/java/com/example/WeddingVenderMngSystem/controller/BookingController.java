@@ -87,6 +87,21 @@ public class BookingController {
     }
 
     /**
+     * Get accepted bookings for the current customer (ready for payment)
+     * GET /api/bookings/customer/accepted
+     */
+    @GetMapping("/customer/accepted")
+    public ResponseEntity<List<BookingResponseDto>> getAcceptedBookingsForCustomer() {
+        try {
+            Long userId = getCurrentUserId();
+            List<BookingResponseDto> bookings = bookingService.getAcceptedBookingsForCustomer(userId);
+            return ResponseEntity.ok(bookings);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        }
+    }
+
+    /**
      * Vendor responds to a booking request (accept/reject)
      * PUT /api/bookings/{bookingId}/respond
      */

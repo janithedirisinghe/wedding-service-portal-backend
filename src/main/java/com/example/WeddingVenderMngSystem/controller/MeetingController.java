@@ -119,7 +119,7 @@ public class MeetingController {
     /**
      * Get vendor meetings
      */
-    @GetMapping("/vendor/{userId}")
+    @GetMapping("/vendor_meetings/{userId}")
     public ResponseEntity<?> getVendorMeetings(@PathVariable Long userId) {
         try {
             List<MeetingDTO> meetings = meetingService.getVendorMeetings(userId);
