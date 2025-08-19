@@ -5,6 +5,7 @@ import com.example.WeddingVenderMngSystem.dto.MeetingRequestDTO;
 import com.example.WeddingVenderMngSystem.dto.MeetingResponseDTO;
 import com.example.WeddingVenderMngSystem.entity.Meeting;
 import com.example.WeddingVenderMngSystem.entity.Customer;
+import com.example.WeddingVenderMngSystem.entity.NotificationType;
 import com.example.WeddingVenderMngSystem.entity.Vendor;
 import com.example.WeddingVenderMngSystem.repository.MeetingRepository;
 import com.example.WeddingVenderMngSystem.repository.CustomerRepository;
@@ -14,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -30,6 +32,9 @@ public class MeetingService {
 
     @Autowired
     private VendorRepository vendorRepository;
+    
+    @Autowired
+    private NotificationService notificationService;
 
     /**
      * Create a new meeting request from customer
@@ -55,6 +60,24 @@ public class MeetingService {
         meeting.setRequestedAt(LocalDateTime.now());
 
         Meeting savedMeeting = meetingRepository.save(meeting);
+        
+        // Create notification for vendor
+        Long vendorUserId = vendor.getUser().getUserId();
+        String title = "New Meeting Request";
+        String message = String.format("You have received a new meeting request from %s %s scheduled for %s at %s",
+            customer.getFirstName(),
+            customer.getLastName(),
+            meeting.getMeetingDateTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")),
+            meeting.getLocation());
+        
+        notificationService.createMeetingNotification(
+            vendorUserId,
+            NotificationType.MEETING_REQUEST,
+            title,
+            message,
+            savedMeeting.getMeetingId()
+        );
+        
         return new MeetingDTO(savedMeeting);
     }
 
@@ -88,6 +111,37 @@ public class MeetingService {
         }
 
         Meeting savedMeeting = meetingRepository.save(meeting);
+        
+        // Create notification for customer
+        Long customerUserId = meeting.getCustomer().getUser().getUserId();
+        String title;
+        String message;
+        NotificationType notificationType;
+        
+        if (responseDTO.getStatus() == Meeting.MeetingStatus.CONFIRMED) {
+            title = "Meeting Request Accepted";
+            message = String.format("%s has confirmed your meeting request for %s at %s. Don't forget to attend!",
+                vendor.getBusinessName(),
+                meeting.getMeetingDateTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")),
+                meeting.getLocation());
+            notificationType = NotificationType.MEETING_ACCEPTED;
+        } else {
+            title = "Meeting Request Rejected";
+            message = String.format("Unfortunately, %s has declined your meeting request for %s. %s",
+                vendor.getBusinessName(),
+                meeting.getMeetingDateTime().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")),
+                responseDTO.getRejectionReason() != null ? "Reason: " + responseDTO.getRejectionReason() : "");
+            notificationType = NotificationType.MEETING_REJECTED;
+        }
+        
+        notificationService.createMeetingNotification(
+            customerUserId,
+            notificationType,
+            title,
+            message,
+            savedMeeting.getMeetingId()
+        );
+        
         return new MeetingDTO(savedMeeting);
     }
 

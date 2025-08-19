@@ -6,6 +6,7 @@ import com.example.WeddingVenderMngSystem.dto.BookingResponseDto;
 import com.example.WeddingVenderMngSystem.entity.Booking;
 import com.example.WeddingVenderMngSystem.entity.Booking.BookingStatus;
 import com.example.WeddingVenderMngSystem.entity.Customer;
+import com.example.WeddingVenderMngSystem.entity.NotificationType;
 import com.example.WeddingVenderMngSystem.entity.Vendor;
 import com.example.WeddingVenderMngSystem.repository.BookingRepository;
 import com.example.WeddingVenderMngSystem.repository.CustomerRepository;
@@ -33,6 +34,9 @@ public class BookingService {
     
     @Autowired
     private ServiceRepository serviceRepository;
+    
+    @Autowired
+    private NotificationService notificationService;
 
     /**
      * Create a new booking request
@@ -57,6 +61,23 @@ public class BookingService {
         );
         
         booking = bookingRepository.save(booking);
+        
+        // Create notification for vendor
+        Long vendorUserId = service.getVendor().getUser().getUserId();
+        String title = "New Booking Request";
+        String message = String.format("You have received a new booking request from %s %s for %s on %s", 
+            customer.getFirstName(), 
+            customer.getLastName(), 
+            service.getName(),
+            requestDto.getEventDate());
+        
+        notificationService.createBookingNotification(
+            vendorUserId, 
+            NotificationType.BOOKING_REQUEST, 
+            title, 
+            message, 
+            booking.getBookingId()
+        );
         
         return convertToResponseDto(booking);
     }
@@ -137,6 +158,36 @@ public class BookingService {
         booking.setResponseDate(LocalDateTime.now());
         
         booking = bookingRepository.save(booking);
+        
+        // Create notification for customer
+        Long customerUserId = booking.getCustomer().getUser().getUserId();
+        String title;
+        String message;
+        NotificationType notificationType;
+        
+        if (decisionDto.isAccepted()) {
+            title = "Booking Request Accepted";
+            message = String.format("Great news! %s has accepted your booking request for %s on %s. You can now proceed with payment.",
+                vendor.getBusinessName(),
+                booking.getService().getName(),
+                booking.getEventDate());
+            notificationType = NotificationType.BOOKING_ACCEPTED;
+        } else {
+            title = "Booking Request Rejected";
+            message = String.format("Unfortunately, %s has declined your booking request for %s on %s. Please consider other available vendors.",
+                vendor.getBusinessName(),
+                booking.getService().getName(),
+                booking.getEventDate());
+            notificationType = NotificationType.BOOKING_REJECTED;
+        }
+        
+        notificationService.createBookingNotification(
+            customerUserId,
+            notificationType,
+            title,
+            message,
+            booking.getBookingId()
+        );
         
         return convertToResponseDto(booking);
     }
