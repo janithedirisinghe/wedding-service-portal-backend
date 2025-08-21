@@ -29,6 +29,13 @@ public class Vendor {
     private String telNo;
     private String profileImageUrl;
 
+    // Add to Vendor entity
+    @Column(name = "is_active", nullable = false, columnDefinition = "BOOLEAN DEFAULT true")
+    private Boolean isActive = true;
+
+    @Column(name = "verify", nullable = false, columnDefinition = "BOOLEAN DEFAULT false") 
+    private Boolean verify = false;
+
     @OneToOne
     @JsonIgnore
     @JoinColumn(name = "user_id")

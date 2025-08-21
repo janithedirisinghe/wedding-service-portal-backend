@@ -157,4 +157,18 @@ public class VendorService {
         return vendorRepository.save(vendor);
     }
 
+    // Get all vendors for admin
+    public List<Vendor> getAllVendors() {
+        return vendorRepository.findAll();
+    }
+
+    // Update vendor verification status for admin
+    public Vendor updateVendorVerificationStatus(Long vendorId, Boolean verifyStatus) {
+        Vendor vendor = vendorRepository.findById(vendorId)
+                .orElseThrow(() -> new IllegalArgumentException("Vendor not found with ID: " + vendorId));
+        
+        vendor.setVerify(verifyStatus);
+        return vendorRepository.save(vendor);
+    }
+
 }

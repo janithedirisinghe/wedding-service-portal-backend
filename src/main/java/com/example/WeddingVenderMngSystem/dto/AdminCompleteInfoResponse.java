@@ -1,61 +1,27 @@
-package com.example.WeddingVenderMngSystem.entity;
+package com.example.WeddingVenderMngSystem.dto;
 
-import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
 import java.time.LocalDateTime;
-import java.util.List;
 
-@Entity
-@Table(name = "admins")
-@Getter
-@Setter
-public class Admin {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class AdminCompleteInfoResponse {
     private Long adminId;
-
-    @OneToOne
-    @JoinColumn(name = "user_id")
-    private User user;
-
-    @Column(name = "first_name")
+    private String username;
+    private String email;
     private String firstName;
-
-    @Column(name = "last_name")
     private String lastName;
-
-    @Column(name = "phone_number")
     private String phoneNumber;
-
-    @Column(name = "address")
     private String address;
-
-    @Column(name = "last_login")
     private LocalDateTime lastLogin;
-
-    @Column(name = "is_active", nullable = false)
-    private Boolean isActive = true;
-
-    @Column(name = "created_at")
+    private Boolean isActive;
     private LocalDateTime createdAt;
-
-    @Column(name = "updated_at")
     private LocalDateTime updatedAt;
-
-    @OneToMany(mappedBy = "admin", cascade = CascadeType.ALL)
-    private List<Vendor> managedVendors;
-
-    @PrePersist
-    protected void onCreate() {
-        createdAt = LocalDateTime.now();
-        updatedAt = LocalDateTime.now();
-    }
-
-    @PreUpdate
-    protected void onUpdate() {
-        updatedAt = LocalDateTime.now();
-    }
+    private Integer managedVendorsCount;
 
     public Long getAdminId() {
         return adminId;
@@ -65,12 +31,20 @@ public class Admin {
         this.adminId = adminId;
     }
 
-    public User getUser() {
-        return user;
+    public String getUsername() {
+        return username;
     }
 
-    public void setUser(User user) {
-        this.user = user;
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
     }
 
     public String getFirstName() {
@@ -137,11 +111,11 @@ public class Admin {
         this.updatedAt = updatedAt;
     }
 
-    public List<Vendor> getManagedVendors() {
-        return managedVendors;
+    public Integer getManagedVendorsCount() {
+        return managedVendorsCount;
     }
 
-    public void setManagedVendors(List<Vendor> managedVendors) {
-        this.managedVendors = managedVendors;
+    public void setManagedVendorsCount(Integer managedVendorsCount) {
+        this.managedVendorsCount = managedVendorsCount;
     }
 }
