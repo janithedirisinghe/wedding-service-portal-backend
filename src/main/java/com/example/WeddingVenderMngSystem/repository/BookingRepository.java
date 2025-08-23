@@ -37,4 +37,7 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
     // Find pending bookings for a vendor
     @Query("SELECT b FROM Booking b WHERE b.service.vendor.venderId = :vendorId AND b.status = 'PENDING'")
     List<Booking> findPendingBookingsByVendorId(@Param("vendorId") Long vendorId);
+    
+    // Analytics methods
+    Long countByStatus(BookingStatus status);
 }
