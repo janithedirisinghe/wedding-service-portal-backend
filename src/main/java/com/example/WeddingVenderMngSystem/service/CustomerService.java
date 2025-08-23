@@ -32,12 +32,31 @@ public class CustomerService {
             List<Customer> customers = customerRepository.findAll();
             return customers.stream().map(customer -> {
                 com.example.WeddingVenderMngSystem.dto.admin.AdminCustomerDetailsDTO dto = new com.example.WeddingVenderMngSystem.dto.admin.AdminCustomerDetailsDTO();
-                dto.setId(customer.getCustomerId());
-                dto.setName(customer.getFirstName() + " " + customer.getLastName());
-                dto.setEmail(customer.getUser() != null ? customer.getUser().getEmail() : null);
-                dto.setPhone(customer.getPhoneNumber());
-                dto.setIsActive(Boolean.TRUE.equals(customer.getIsActive()));
-                // Add other fields as needed
+                dto.setCustomerId(customer.getCustomerId());
+                dto.setIsActive(customer.getIsActive());
+                dto.setFirstName(customer.getFirstName());
+                dto.setLastName(customer.getLastName());
+                dto.setDateOfBirth(customer.getDateOfBirth());
+                dto.setPhoneNumber(customer.getPhoneNumber());
+                dto.setBio(customer.getBio());
+                dto.setAddress(customer.getAddress());
+                dto.setCity(customer.getCity());
+                dto.setCountry(customer.getCountry());
+                dto.setLocation(customer.getLocation());
+                dto.setWeddingDate(customer.getWeddingDate());
+                dto.setBudget(customer.getBudget());
+                dto.setProfileImageUrl(customer.getProfileImageUrl());
+                dto.setPreferredVendorTypes(customer.getPreferredVendorTypes());
+                if (customer.getUser() != null) {
+                    dto.setUserId(customer.getUser().getUserId());
+                    dto.setUserName(customer.getUser().getUsername());
+                    dto.setUserEmail(customer.getUser().getEmail());
+                }
+                if (customer.getFollowers() != null) {
+                    dto.setFollowerCount(customer.getFollowers().size());
+                } else {
+                    dto.setFollowerCount(0);
+                }
                 return dto;
             }).collect(java.util.stream.Collectors.toList());
         }
