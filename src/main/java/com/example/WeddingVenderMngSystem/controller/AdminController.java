@@ -34,6 +34,29 @@ public class AdminController {
     @Autowired
     private AdminAnalyticsService adminAnalyticsService;
 
+        @Autowired
+        private com.example.WeddingVenderMngSystem.service.CustomerService customerService;
+
+        /**
+         * Admin API: Get all customers with full details
+         */
+        @GetMapping("/customers/all")
+        @PreAuthorize("hasRole('ADMIN')")
+        public ResponseEntity<List<com.example.WeddingVenderMngSystem.dto.admin.AdminCustomerDetailsDTO>> getAllCustomersForAdmin() {
+            List<com.example.WeddingVenderMngSystem.dto.admin.AdminCustomerDetailsDTO> customers = customerService.getAllCustomerDetailsForAdmin();
+            return ResponseEntity.ok(customers);
+        }
+
+        /**
+         * Admin API: Toggle isActive flag for a customer
+         */
+        @PostMapping("/customers/toggle-active")
+        @PreAuthorize("hasRole('ADMIN')")
+        public ResponseEntity<String> toggleCustomerActive(@RequestBody com.example.WeddingVenderMngSystem.dto.admin.ToggleCustomerActiveDTO dto) {
+            boolean result = customerService.toggleCustomerActiveFlag(dto.getCustomerId(), dto.getIsActive());
+            return ResponseEntity.ok("Customer isActive set to " + (result ? "1" : "0"));
+        }
+
     @GetMapping("/dashboard")
     @PreAuthorize("hasRole('ADMIN')")
     public String adminDashboard() {

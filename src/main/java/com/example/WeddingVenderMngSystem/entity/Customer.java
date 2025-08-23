@@ -16,6 +16,10 @@ public class Customer {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long customerId;
 
+    // Status flag for soft delete
+    @Column(name = "is_active", nullable = false,columnDefinition = "BOOLEAN DEFAULT true")
+    private Boolean isActive = true;
+
     // Personal Information
     private String firstName;
     private String lastName;
@@ -48,6 +52,14 @@ public class Customer {
 
     public void setCustomerId(Long customerId) {
         this.customerId = customerId;
+    }
+
+    public Boolean getIsActive() {
+        return isActive;
+    }
+
+    public void setIsActive(Boolean isActive) {
+        this.isActive = isActive;
     }
 
     public String getFirstName() {

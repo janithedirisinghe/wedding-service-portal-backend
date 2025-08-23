@@ -25,6 +25,33 @@ public class CustomerService {
     @Autowired
     private SupabaseStorageService supabaseStorageService;
 
+        /**
+         * Admin: Get all customers with full details
+         */
+        public List<com.example.WeddingVenderMngSystem.dto.admin.AdminCustomerDetailsDTO> getAllCustomerDetailsForAdmin() {
+            List<Customer> customers = customerRepository.findAll();
+            return customers.stream().map(customer -> {
+                com.example.WeddingVenderMngSystem.dto.admin.AdminCustomerDetailsDTO dto = new com.example.WeddingVenderMngSystem.dto.admin.AdminCustomerDetailsDTO();
+                dto.setId(customer.getCustomerId());
+                dto.setName(customer.getFirstName() + " " + customer.getLastName());
+                dto.setEmail(customer.getUser() != null ? customer.getUser().getEmail() : null);
+                dto.setPhone(customer.getPhoneNumber());
+                dto.setIsActive(Boolean.TRUE.equals(customer.getIsActive()));
+                // Add other fields as needed
+                return dto;
+            }).collect(java.util.stream.Collectors.toList());
+        }
+
+        /**
+         * Admin: Toggle isActive flag for a customer
+         */
+        public boolean toggleCustomerActiveFlag(Long customerId, boolean isActive) {
+            Customer customer = getCustomerById(customerId);
+            customer.setIsActive(isActive);
+            customerRepository.save(customer);
+            return Boolean.TRUE.equals(customer.getIsActive());
+        }
+
     public Customer registerCustomer(Long userId, Customer customerDetails) {
         // Check if user exists
         Optional<User> userOptional = userRepository.findById(userId);
