@@ -171,4 +171,119 @@ public class VendorService {
         return vendorRepository.save(vendor);
     }
 
+    // ================= SEARCH METHODS =================
+    
+    // Basic Search Methods
+    public List<Vendor> searchByBusinessName(String businessName) {
+        return vendorRepository.findByBusinessNameContainingIgnoreCase(businessName);
+    }
+    
+    public List<Vendor> searchByVendorType(String venType) {
+        return vendorRepository.findByVenTypeIgnoreCase(venType);
+    }
+    
+    public List<Vendor> searchByLocation(String location) {
+        return vendorRepository.findByLocationContainingIgnoreCase(location);
+    }
+    
+    public List<Vendor> searchByCountry(String country) {
+        return vendorRepository.findByCountryIgnoreCase(country);
+    }
+    
+    public List<Vendor> searchByAvailability(String availability) {
+        return vendorRepository.findByAvailabilityIgnoreCase(availability);
+    }
+    
+    public List<Vendor> getActiveVendors() {
+        return vendorRepository.findByIsActiveTrue();
+    }
+    
+    public List<Vendor> getVerifiedVendors() {
+        return vendorRepository.findByVerifyTrue();
+    }
+    
+    public List<Vendor> getActiveAndVerifiedVendors() {
+        return vendorRepository.findByIsActiveTrueAndVerifyTrue();
+    }
+    
+    // Advanced Search Methods
+    public List<Vendor> searchByTypeAndLocation(String venType, String location) {
+        return vendorRepository.findByVenTypeIgnoreCaseAndLocationContainingIgnoreCase(venType, location);
+    }
+    
+    public List<Vendor> searchByLocationAndCountry(String location, String country) {
+        return vendorRepository.findByLocationContainingIgnoreCaseAndCountryIgnoreCase(location, country);
+    }
+    
+    public List<Vendor> searchByTypeAndCountry(String venType, String country) {
+        return vendorRepository.findByVenTypeIgnoreCaseAndCountryIgnoreCase(venType, country);
+    }
+    
+    // Verified Vendor Search
+    public List<Vendor> searchVerifiedVendorsByType(String venType) {
+        return vendorRepository.findByVenTypeIgnoreCaseAndIsActiveTrueAndVerifyTrue(venType);
+    }
+    
+    public List<Vendor> searchVerifiedVendorsByLocation(String location) {
+        return vendorRepository.findByLocationContainingIgnoreCaseAndIsActiveTrueAndVerifyTrue(location);
+    }
+    
+    public List<Vendor> searchVerifiedVendorsByCountry(String country) {
+        return vendorRepository.findByCountryIgnoreCaseAndIsActiveTrueAndVerifyTrue(country);
+    }
+    
+    // Bio/Description Search
+    public List<Vendor> searchByBio(String keyword) {
+        return vendorRepository.findByBioContainingIgnoreCase(keyword);
+    }
+    
+    public List<Vendor> searchVerifiedVendorsByBio(String keyword) {
+        return vendorRepository.findByBioContainingIgnoreCaseAndIsActiveTrueAndVerifyTrue(keyword);
+    }
+    
+    // Multi-criteria Search
+    public List<Vendor> searchVendors(String businessName, String venType, String location, 
+                                     String country, String availability, Boolean isActive, Boolean verify) {
+        return vendorRepository.searchVendors(businessName, venType, location, country, availability, isActive, verify);
+    }
+    
+    // Service-based Search
+    public List<Vendor> searchByServiceName(String serviceName) {
+        return vendorRepository.findByServiceNameContaining(serviceName);
+    }
+    
+    public List<Vendor> searchByServicePriceRange(Double minPrice, Double maxPrice) {
+        return vendorRepository.findByServicePriceRange(minPrice, maxPrice);
+    }
+    
+    public List<Vendor> searchByServicePricingModel(String pricingModel) {
+        return vendorRepository.findByServicePricingModel(pricingModel);
+    }
+    
+    // Follower-based Search
+    public List<Vendor> getVendorsWithMinimumFollowers(int minFollowers) {
+        return vendorRepository.findVendorsWithMinimumFollowers(minFollowers);
+    }
+    
+    public List<Vendor> getMostFollowedVendors(int limit) {
+        org.springframework.data.domain.Pageable pageable = org.springframework.data.domain.PageRequest.of(0, limit);
+        return vendorRepository.findMostFollowedVendors(pageable);
+    }
+    
+    // Auto-complete Search
+    public List<String> getBusinessNameSuggestions(String query, int limit) {
+        org.springframework.data.domain.Pageable pageable = org.springframework.data.domain.PageRequest.of(0, limit);
+        return vendorRepository.findBusinessNameSuggestions(query, pageable);
+    }
+    
+    public List<String> getVenTypeSuggestions(String query, int limit) {
+        org.springframework.data.domain.Pageable pageable = org.springframework.data.domain.PageRequest.of(0, limit);
+        return vendorRepository.findVenTypeSuggestions(query, pageable);
+    }
+    
+    public List<String> getLocationSuggestions(String query, int limit) {
+        org.springframework.data.domain.Pageable pageable = org.springframework.data.domain.PageRequest.of(0, limit);
+        return vendorRepository.findLocationSuggestions(query, pageable);
+    }
+
 }

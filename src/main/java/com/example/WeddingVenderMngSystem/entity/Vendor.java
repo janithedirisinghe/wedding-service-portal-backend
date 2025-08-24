@@ -21,7 +21,7 @@ public class Vendor {
     private String availability;
 
     private String Location;
-    private  String BRN;
+    private String BRN;
     private String Country;
     @JsonProperty("VenType") // Ensures JSON maps correctly
     private String venType;   // Changed from "VenType" to "venType"
@@ -167,6 +167,30 @@ public class Vendor {
 
     public List<ChatRoom> getChatRooms() {
         return chatRooms;
+    }
+
+    public Boolean getActive() {
+        return isActive;
+    }
+
+    public void setActive(Boolean active) {
+        isActive = active;
+    }
+
+    public Boolean getVerify() {
+        return verify;
+    }
+
+    public void setVerify(Boolean verify) {
+        this.verify = verify;
+    }
+
+    public void setServices(List<Service> services) {
+        this.services = services;
+    }
+
+    public void setAdmin(Admin admin) {
+        this.admin = admin;
     }
 
     public void setChatRooms(List<ChatRoom> chatRooms) {
