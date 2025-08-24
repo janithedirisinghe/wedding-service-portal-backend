@@ -38,6 +38,12 @@ public class ServiceController {
         return ResponseEntity.ok(serviceService.GetServicesByVenderID(venderId));
     }
 
+    // New: Get services by userId (resolves vendor internally)
+    @GetMapping("getServiceByUserId/{userId}")
+    public ResponseEntity<List<ServiceDTO>> getServicesByUserId(@PathVariable Long userId){
+        return ResponseEntity.ok(serviceService.getServicesByUserId(userId));
+    }
+
     // Update a service
     @PutMapping("/{id}")
     public ResponseEntity<ServiceDTO> updateService(@PathVariable Long id, @RequestBody ServiceDTO serviceDTO) {

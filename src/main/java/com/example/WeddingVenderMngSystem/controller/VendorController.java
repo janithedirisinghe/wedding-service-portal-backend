@@ -55,6 +55,17 @@ public class VendorController {
         }
     }
 
+    // New API: Get vendor by venderId
+    @GetMapping("/getvenderByVenderId/{venderId}")
+    public ResponseEntity<Vendor> getVendorByVenderId(@PathVariable Long venderId) {
+        try {
+            Vendor vendor = vendorService.getVendorById(venderId);
+            return ResponseEntity.ok(vendor);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
 
 //    @GetMapping("/{vendorId}")
 //    public ResponseEntity<VendorDTO> getVendorById(@PathVariable Long vendorId) {

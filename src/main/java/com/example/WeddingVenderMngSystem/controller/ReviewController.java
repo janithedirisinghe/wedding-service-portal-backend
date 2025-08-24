@@ -39,6 +39,17 @@ public class ReviewController {
         }
     }
 
+    // New: Get reviews directly by vendorId (no user validation)
+    @GetMapping("/vendorId/{venderId}")
+    public ResponseEntity<List<ReviewDTO>> getReviewsByVendorIdDirect(@PathVariable Long venderId) {
+        try {
+            List<ReviewDTO> reviews = reviewService.getReviewsByVendorId(venderId);
+            return ResponseEntity.ok(reviews);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
     @PostMapping
     public ResponseEntity<ReviewDTO> createReview(@RequestBody ReviewDTO reviewDTO) {
         return ResponseEntity.ok(reviewService.createReview(reviewDTO));

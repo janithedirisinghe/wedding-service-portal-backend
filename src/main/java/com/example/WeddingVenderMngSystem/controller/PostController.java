@@ -41,6 +41,18 @@ public class PostController {
             return ResponseEntity.status(500).build();
         }
     }
+
+    // New: get posts directly by vendorId
+    @GetMapping("/vendorId/{venderId}")
+    public ResponseEntity<List<PostDTO>> getPostsByVendorId(@PathVariable Long venderId) {
+        try {
+            List<PostDTO> posts = postService.getPostsByVendorId(venderId);
+            return ResponseEntity.ok(posts);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(500).build();
+        }
+    }
     
     // Timeline API endpoints - Facebook-like functionality
     
