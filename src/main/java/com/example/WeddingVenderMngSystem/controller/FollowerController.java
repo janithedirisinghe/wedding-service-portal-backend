@@ -4,6 +4,7 @@ import com.example.WeddingVenderMngSystem.dto.FollowRequest;
 import com.example.WeddingVenderMngSystem.dto.FollowerDTO;
 import com.example.WeddingVenderMngSystem.entity.Customer;
 import com.example.WeddingVenderMngSystem.entity.Follower;
+import com.example.WeddingVenderMngSystem.dto.VendorSummaryDTO;
 import com.example.WeddingVenderMngSystem.entity.Vendor;
 import com.example.WeddingVenderMngSystem.service.FollowerService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -92,12 +93,16 @@ public class FollowerController {
     public ResponseEntity<Map<String, Object>> getCustomerFollowing(@PathVariable Long userId) {
         Map<String, Object> response = new HashMap<>();
         try {
+            // Original vendor entities (preserved)
             List<Vendor> following = followerService.getCustomerFollowing(userId);
+            // Added enriched summaries (new data)
+            List<VendorSummaryDTO> followingSummaries = followerService.getCustomerFollowingSummaries(userId);
             Long followingCount = followerService.getFollowingCount(userId);
             
             response.put("success", true);
             response.put("followingCount", followingCount);
-            response.put("following", following);
+            response.put("following", following); // original list retained
+            response.put("followingSummaries", followingSummaries); // new enriched list
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             response.put("success", false);

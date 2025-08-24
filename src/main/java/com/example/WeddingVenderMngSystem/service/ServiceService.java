@@ -4,6 +4,8 @@ import com.example.WeddingVenderMngSystem.dto.ServiceDTO;
 import com.example.WeddingVenderMngSystem.entity.Vendor;
 import com.example.WeddingVenderMngSystem.repository.ServiceRepository;
 import com.example.WeddingVenderMngSystem.repository.VendorRepository;
+import com.example.WeddingVenderMngSystem.repository.FollowerRepository;
+import com.example.WeddingVenderMngSystem.repository.ReviewRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -19,6 +21,12 @@ public class ServiceService {
 
     @Autowired
     private VendorRepository vendorRepository;
+
+    @Autowired
+    private FollowerRepository followerRepository;
+
+    @Autowired
+    private ReviewRepository reviewRepository;
 
     // Create a new Service
     public ServiceDTO createService(ServiceDTO serviceDTO) {
@@ -146,6 +154,14 @@ public class ServiceService {
     if (service.getCreatedAt() != null) dto.setCreatedAt(service.getCreatedAt().toString());
     if (service.getUpdatedAt() != null) dto.setUpdatedAt(service.getUpdatedAt().toString());
     dto.setIsDeleted(service.getIsDeleted());
+    // Aggregated metrics (vendor-level)
+    Long vendorId = service.getVendor().getVenderId();
+    Long followerCount = followerRepository.countActiveFollowersByVendorId(vendorId);
+    dto.setFollowerCount(followerCount);
+    Long reviewCount = reviewRepository.countByVendorId(vendorId);
+    dto.setReviewCount(reviewCount);
+    Double avgRating = reviewRepository.averageRatingByVendorId(vendorId);
+    dto.setAverageRating(avgRating != null ? Math.round(avgRating * 10.0) / 10.0 : null); // round to 1 decimal
         return dto;
     }
 

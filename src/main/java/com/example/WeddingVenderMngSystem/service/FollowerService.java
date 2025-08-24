@@ -3,6 +3,8 @@ package com.example.WeddingVenderMngSystem.service;
 import com.example.WeddingVenderMngSystem.entity.Customer;
 import com.example.WeddingVenderMngSystem.entity.Follower;
 import com.example.WeddingVenderMngSystem.entity.Vendor;
+import com.example.WeddingVenderMngSystem.dto.VendorSummaryDTO;
+import com.example.WeddingVenderMngSystem.repository.ReviewRepository;
 import com.example.WeddingVenderMngSystem.repository.CustomerRepository;
 import com.example.WeddingVenderMngSystem.repository.FollowerRepository;
 import com.example.WeddingVenderMngSystem.repository.VendorRepository;
@@ -26,6 +28,9 @@ public class FollowerService {
     
     @Autowired
     private VendorRepository vendorRepository;
+
+    @Autowired
+    private ReviewRepository reviewRepository;
     
     /**
      * Follow a vendor by a customer (using userId)
@@ -93,6 +98,27 @@ public class FollowerService {
                 .orElseThrow(() -> new RuntimeException("Customer not found for user id: " + userId));
         
         return followerRepository.findVendorsFollowedByCustomer(customer.getCustomerId());
+    }
+
+    /**
+     * Get vendors followed by customer enriched with follower/review stats
+     */
+    public List<VendorSummaryDTO> getCustomerFollowingSummaries(Long userId) {
+        Customer customer = customerRepository.findByUser_UserId(userId)
+                .orElseThrow(() -> new RuntimeException("Customer not found for user id: " + userId));
+        List<Vendor> vendors = followerRepository.findVendorsFollowedByCustomer(customer.getCustomerId());
+        return vendors.stream().map(v -> {
+            VendorSummaryDTO dto = new VendorSummaryDTO();
+            dto.setVendorId(v.getVenderId());
+            dto.setBusinessName(v.getBusinessName());
+            dto.setProfileImageUrl(v.getProfileImageUrl());
+            dto.setFollowerCount(getFollowerCount(v.getVenderId()));
+            Long reviewCount = reviewRepository.countByVendorId(v.getVenderId());
+            dto.setReviewCount(reviewCount);
+            Double avg = reviewRepository.averageRatingByVendorId(v.getVenderId());
+            dto.setAverageRating(avg != null ? Math.round(avg * 10.0) / 10.0 : null);
+            return dto;
+        }).toList();
     }
     
     /**

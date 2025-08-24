@@ -22,6 +22,10 @@ public class ServiceDTO {
     private String createdAt; // ISO string representation
     private String updatedAt; // ISO string representation
     private Boolean isDeleted;
+    // Aggregated metrics
+    private Long followerCount; // Active followers of vendor
+    private Long reviewCount;   // Number of reviews for vendor
+    private Double averageRating; // Average rating (null if no reviews)
 
     public Long getServiceId() {
         return serviceId;
@@ -110,4 +114,13 @@ public class ServiceDTO {
 
     public Boolean getIsDeleted() { return isDeleted; }
     public void setIsDeleted(Boolean deleted) { isDeleted = deleted; }
+
+    public Long getFollowerCount() { return followerCount; }
+    public void setFollowerCount(Long followerCount) { this.followerCount = followerCount; }
+
+    public Long getReviewCount() { return reviewCount; }
+    public void setReviewCount(Long reviewCount) { this.reviewCount = reviewCount; }
+
+    public Double getAverageRating() { return averageRating; }
+    public void setAverageRating(Double averageRating) { this.averageRating = averageRating; }
 }
