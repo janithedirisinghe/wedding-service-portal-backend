@@ -195,4 +195,18 @@ public class Customer {
     @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JsonIgnore
     private List<ChatRoom> chatRooms;
+    
+    // Customer preferred vendor types relationship (new table implementation)
+    @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonIgnore
+    private List<CustomerPreferredVendorType> customerPreferredVendorTypes;
+    
+    // Getter and setter for the new relationship
+    public List<CustomerPreferredVendorType> getCustomerPreferredVendorTypes() {
+        return customerPreferredVendorTypes;
+    }
+    
+    public void setCustomerPreferredVendorTypes(List<CustomerPreferredVendorType> customerPreferredVendorTypes) {
+        this.customerPreferredVendorTypes = customerPreferredVendorTypes;
+    }
 }

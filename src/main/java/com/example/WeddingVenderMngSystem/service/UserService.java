@@ -56,6 +56,33 @@ public class UserService {
         return userRepository.findByUsername(username).orElse(null);
     }
 
+    public boolean changePassword(String username, String currentPassword, String newPassword) {
+        try {
+            User user = findByUsername(username);
+            if (user == null) {
+                return false;
+            }
+
+            // Verify current password
+            if (!passwordEncoder.matches(currentPassword, user.getPassword())) {
+                return false;
+            }
+
+            // Update password with new encrypted password
+            user.setPassword(passwordEncoder.encode(newPassword));
+            userRepository.save(user);
+            return true;
+
+        } catch (Exception e) {
+            System.out.println("Error changing password: " + e.getMessage());
+            return false;
+        }
+    }
+
+    public User findById(Long userId) {
+        return userRepository.findById(userId).orElse(null);
+    }
+
 }
 
 

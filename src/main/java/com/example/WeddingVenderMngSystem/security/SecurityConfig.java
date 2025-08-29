@@ -43,7 +43,8 @@ public class SecurityConfig {
                     return corsConfig;
                 }))// Disable CSRF for API requests
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/auth/**").permitAll() // Public endpoints for login/register
+                        .requestMatchers("/auth/login", "/auth/register", "/auth/verify-otp", "/auth/vendor-complete-info", "/auth/customer-profile").permitAll() // Public auth endpoints
+                        .requestMatchers("/auth/change-password").authenticated() // Change password requires authentication
                         .requestMatchers("/services/**").permitAll()
                         .requestMatchers("/vendors/**").permitAll()
                         .requestMatchers("/posts/**").permitAll()

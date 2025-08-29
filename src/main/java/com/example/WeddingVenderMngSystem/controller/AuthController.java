@@ -2,6 +2,7 @@ package com.example.WeddingVenderMngSystem.controller;
 
 import com.example.WeddingVenderMngSystem.common.EmailService;
 import com.example.WeddingVenderMngSystem.common.OtpService;
+import com.example.WeddingVenderMngSystem.dto.ChangePasswordRequest;
 import com.example.WeddingVenderMngSystem.dto.CustomerDTO;
 import com.example.WeddingVenderMngSystem.dto.LoginDto;
 import com.example.WeddingVenderMngSystem.dto.OtpVerificationRequest;
@@ -19,6 +20,8 @@ import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
@@ -183,6 +186,47 @@ public class AuthController {
             return ResponseEntity.ok(response);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Collections.singletonMap("error", e.getMessage()));
+        }
+    }
+
+    // ------------------- Change Password API -------------------
+    @PostMapping("/change-password")
+    public ResponseEntity<Map<String, String>> changePassword(@RequestBody ChangePasswordRequest request) {
+        try {
+            // Get current authenticated user
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            if (authentication == null || !authentication.isAuthenticated()) {
+                return ResponseEntity.badRequest().body(Collections.singletonMap("error", "User not authenticated"));
+            }
+
+            String username = authentication.getName();
+            
+            // Validate password confirmation
+            if (!request.getNewPassword().equals(request.getConfirmPassword())) {
+                return ResponseEntity.badRequest().body(Collections.singletonMap("error", "New password and confirmation do not match"));
+            }
+
+            // Validate password length
+            if (request.getNewPassword().length() < 6) {
+                return ResponseEntity.badRequest().body(Collections.singletonMap("error", "New password must be at least 6 characters long"));
+            }
+
+            // Check if new password is different from current password
+            if (request.getCurrentPassword().equals(request.getNewPassword())) {
+                return ResponseEntity.badRequest().body(Collections.singletonMap("error", "New password must be different from current password"));
+            }
+
+            // Attempt to change password
+            boolean success = userService.changePassword(username, request.getCurrentPassword(), request.getNewPassword());
+            
+            if (success) {
+                return ResponseEntity.ok(Collections.singletonMap("message", "Password changed successfully"));
+            } else {
+                return ResponseEntity.badRequest().body(Collections.singletonMap("error", "Current password is incorrect"));
+            }
+
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Collections.singletonMap("error", "An error occurred while changing password: " + e.getMessage()));
         }
     }
 }
