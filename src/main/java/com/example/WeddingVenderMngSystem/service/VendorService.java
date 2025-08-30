@@ -1,10 +1,14 @@
 package com.example.WeddingVenderMngSystem.service;
 
+import com.example.WeddingVenderMngSystem.dto.VendorStatsDTO;
 import com.example.WeddingVenderMngSystem.dto.VendorUpdateDTO;
 import com.example.WeddingVenderMngSystem.entity.User;
 import com.example.WeddingVenderMngSystem.entity.Vendor;
 import com.example.WeddingVenderMngSystem.repository.UserRepository;
 import com.example.WeddingVenderMngSystem.repository.VendorRepository;
+import com.example.WeddingVenderMngSystem.repository.FollowerRepository;
+import com.example.WeddingVenderMngSystem.repository.PostRepository;
+import com.example.WeddingVenderMngSystem.repository.ReviewRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -20,6 +24,15 @@ public class VendorService {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private FollowerRepository followerRepository;
+
+    @Autowired
+    private PostRepository postRepository;
+
+    @Autowired
+    private ReviewRepository reviewRepository;
 
     @Autowired
     private SupabaseStorageService supabaseStorageService;
@@ -284,6 +297,22 @@ public class VendorService {
     public List<String> getLocationSuggestions(String query, int limit) {
         org.springframework.data.domain.Pageable pageable = org.springframework.data.domain.PageRequest.of(0, limit);
         return vendorRepository.findLocationSuggestions(query, pageable);
+    }
+    
+    // Get vendor statistics (review count, post count, follower count)
+    public VendorStatsDTO getVendorStats(Long userId) {
+        // Get vendor by userId
+        Vendor vendor = vendorRepository.findByUser_UserId(userId)
+                .orElseThrow(() -> new IllegalArgumentException("Vendor not found for user ID: " + userId));
+        
+        Long vendorId = vendor.getVenderId();
+        
+        // Get counts
+        Long reviewCount = reviewRepository.countByVendorId(vendorId);
+        Long postCount = postRepository.countByVendorId(vendorId);
+        Long followerCount = followerRepository.countActiveFollowersByVendorId(vendorId);
+        
+        return new VendorStatsDTO(reviewCount, postCount, followerCount);
     }
 
 }

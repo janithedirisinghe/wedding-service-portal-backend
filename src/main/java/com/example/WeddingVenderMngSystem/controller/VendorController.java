@@ -1,5 +1,6 @@
 package com.example.WeddingVenderMngSystem.controller;
 
+import com.example.WeddingVenderMngSystem.dto.VendorStatsDTO;
 import com.example.WeddingVenderMngSystem.dto.VendorUpdateDTO;
 import com.example.WeddingVenderMngSystem.entity.Service;
 import com.example.WeddingVenderMngSystem.entity.Vendor;
@@ -430,5 +431,17 @@ public class VendorController {
 //        return ResponseEntity.ok(vendorDTO);
 //    }
 
+    // Get vendor statistics (review count, post count, follower count)
+    @GetMapping("/stats/{userId}")
+    public ResponseEntity<VendorStatsDTO> getVendorStats(@PathVariable Long userId) {
+        try {
+            VendorStatsDTO stats = vendorService.getVendorStats(userId);
+            return ResponseEntity.ok(stats);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.notFound().build();
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
 
 }

@@ -41,6 +41,14 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
     // Analytics methods
     Long countByStatus(BookingStatus status);
     
+    // Count bookings by vendor ID
+    @Query("SELECT COUNT(b) FROM Booking b WHERE b.service.vendor.venderId = :vendorId")
+    Long countByVendorId(@Param("vendorId") Long vendorId);
+    
+    // Count completed bookings by vendor ID
+    @Query("SELECT COUNT(b) FROM Booking b WHERE b.service.vendor.venderId = :vendorId AND b.status = 'COMPLETED'")
+    Long countCompletedBookingsByVendorId(@Param("vendorId") Long vendorId);
+    
     // Count bookings by customer ID
     Long countByCustomer_CustomerId(Long customerId);
 }

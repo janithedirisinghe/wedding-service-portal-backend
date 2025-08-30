@@ -214,41 +214,24 @@ public class CustomerController {
     }
 
     /**
-     * Get vendor suggestions for a specific customer using their customer ID
+     * Get personalized vendor suggestions for a user based on their profile
+     * Uses customer preferences, budget, location, and vendor performance metrics
      * 
-     * @param customerId The customer's ID
-     * @param location Optional location override
-     * @param budget Optional budget override
-     * @param preferredTypes Optional preferred vendor types
-     * @param sortBy Optional sort criteria
-     * @param limit Optional result limit
-     * @return VendorSuggestionResponseDTO with suggested vendors
+     * @param userId The user's ID from authentication
+     * @return VendorSuggestionResponseDTO with personalized vendor suggestions
      */
-    @GetMapping("/{customerId}/suggest-vendors")
-    public ResponseEntity<VendorSuggestionResponseDTO> suggestVendorsForCustomer(
-            @PathVariable Long customerId,
-            @RequestParam(required = false) String location,
-            @RequestParam(required = false) Double budget,
-            @RequestParam(required = false) List<String> preferredTypes,
-            @RequestParam(required = false) String sortBy,
-            @RequestParam(required = false) Integer limit) {
+    @GetMapping("/users/{userId}/personalized-suggestions")
+    public ResponseEntity<VendorSuggestionResponseDTO> getPersonalizedVendorSuggestions(
+            @PathVariable Long userId) {
         
         try {
-            VendorSuggestionRequestDTO request = new VendorSuggestionRequestDTO();
-            request.setCustomerId(customerId);
-            request.setCustomerLocation(location);
-            request.setBudget(budget);
-            request.setPreferredVendorTypes(preferredTypes);
-            request.setSortBy(sortBy);
-            request.setLimit(limit);
-            
-            VendorSuggestionResponseDTO response = vendorSuggestionService.suggestVendors(request);
+            VendorSuggestionResponseDTO response = vendorSuggestionService.getPersonalizedVendorSuggestions(userId);
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             VendorSuggestionResponseDTO errorResponse = new VendorSuggestionResponseDTO();
             errorResponse.setSuggestedVendors(new ArrayList<>());
             errorResponse.setTotalSuggestions(0);
-            errorResponse.setMessage("Error occurred while suggesting vendors: " + e.getMessage());
+            errorResponse.setMessage("Error occurred while getting personalized suggestions: " + e.getMessage());
             errorResponse.setAppliedFilters(new ArrayList<>());
             return ResponseEntity.status(500).body(errorResponse);
         }

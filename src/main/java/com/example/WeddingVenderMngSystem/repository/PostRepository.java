@@ -12,6 +12,10 @@ import java.util.List;
 public interface PostRepository extends JpaRepository<Post , Long> {
     List<Post> findByVendor_venderId(Long venderId);
     
+    // Count posts by vendor ID
+    @Query("SELECT COUNT(p) FROM Post p WHERE p.vendor.venderId = :vendorId")
+    Long countByVendorId(@Param("vendorId") Long vendorId);
+    
     // Get random posts for timeline feed (using native query for better database compatibility)
     @Query(value = "SELECT * FROM posts ORDER BY RAND() LIMIT :limit", nativeQuery = true)
     List<Post> findRandomPostsNative(@Param("limit") int limit);

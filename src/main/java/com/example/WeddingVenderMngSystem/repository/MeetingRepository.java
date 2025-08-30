@@ -68,4 +68,15 @@ public interface MeetingRepository extends JpaRepository<Meeting, Long> {
     // Find upcoming meetings for a customer with eager loading
     @Query("SELECT m FROM Meeting m JOIN FETCH m.customer c JOIN FETCH c.user JOIN FETCH m.vendor v JOIN FETCH v.user WHERE m.customer.customerId = :customerId AND m.meetingDateTime > :currentDate AND m.status = 'CONFIRMED' ORDER BY m.meetingDateTime ASC")
     List<Meeting> findUpcomingMeetingsByCustomerId(@Param("customerId") Long customerId, @Param("currentDate") LocalDateTime currentDate);
+    
+    // Count meetings by vendor ID
+    @Query("SELECT COUNT(m) FROM Meeting m WHERE m.vendor.venderId = :vendorId")
+    Long countByVendorId(@Param("vendorId") Long vendorId);
+    
+    // Count completed meetings by vendor ID
+    @Query("SELECT COUNT(m) FROM Meeting m WHERE m.vendor.venderId = :vendorId AND m.status = 'COMPLETED'")
+    Long countCompletedMeetingsByVendorId(@Param("vendorId") Long vendorId);
+    
+    // Count meetings by customer ID
+    Long countByCustomer_CustomerId(Long customerId);
 }

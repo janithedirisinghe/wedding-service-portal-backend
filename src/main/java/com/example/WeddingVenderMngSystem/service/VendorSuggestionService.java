@@ -19,10 +19,13 @@ public class VendorSuggestionService {
     private CustomerRepository customerRepository;
 
     @Autowired
-    private CustomerPreferredVendorTypeRepository customerPreferredVendorTypeRepository;
+    private ReviewRepository reviewRepository;
 
     @Autowired
-    private ReviewRepository reviewRepository;
+    private BookingRepository bookingRepository;
+
+    @Autowired
+    private MeetingRepository meetingRepository;
 
     public VendorSuggestionResponseDTO suggestVendors(VendorSuggestionRequestDTO request) {
         List<String> appliedFilters = new ArrayList<>();
@@ -137,21 +140,17 @@ public class VendorSuggestionService {
 
     private List<String> getPreferredVendorTypes(Customer customer, List<String> requestTypes) {
         Set<String> types = new HashSet<>();
-        
+
         // Add types from request
         if (requestTypes != null && !requestTypes.isEmpty()) {
             types.addAll(requestTypes);
         }
-        
-        // Add types from customer preferences
-        if (customer != null) {
-            List<CustomerPreferredVendorType> preferences = 
-                customerPreferredVendorTypeRepository.findByCustomerId(customer.getCustomerId());
-            types.addAll(preferences.stream()
-                .map(CustomerPreferredVendorType::getVendorType)
-                .collect(Collectors.toList()));
+
+        // Add types from customer preferences (using the simpler approach)
+        if (customer != null && customer.getPreferredVendorTypes() != null) {
+            types.addAll(customer.getPreferredVendorTypes());
         }
-        
+
         return new ArrayList<>(types);
     }
 
@@ -451,5 +450,311 @@ public class VendorSuggestionService {
             default:
                 return 5;
         }
+    }
+
+    /**
+     * Get personalized vendor suggestions based on customer's profile and preferences
+     * Uses customer preferred vendors, budget, location, and vendor performance metrics
+     * 
+     * @param userId The user's ID
+     * @return VendorSuggestionResponseDTO with personalized suggestions
+     */
+    public VendorSuggestionResponseDTO getPersonalizedVendorSuggestions(Long userId) {
+        List<String> appliedFilters = new ArrayList<>();
+        
+        // Get customer details using userId
+        final Customer customer;
+        if (userId != null) {
+            Optional<Customer> customerOpt = customerRepository.findByUser_UserId(userId);
+            if (customerOpt.isPresent()) {
+                customer = customerOpt.get();
+                appliedFilters.add("Customer profile preferences for user: " + userId);
+            } else {
+                customer = null;
+                appliedFilters.add("No customer profile found for user: " + userId);
+            }
+        } else {
+            customer = null;
+        }
+
+        return processPersonalizedSuggestions(customer, appliedFilters);
+    }
+
+    private VendorSuggestionResponseDTO processPersonalizedSuggestions(Customer customer, List<String> appliedFilters) {
+        
+        // Get preferred vendor types from customer preferences
+        List<String> preferredTypes = getPreferredVendorTypes(customer, null);
+        if (!preferredTypes.isEmpty()) {
+            appliedFilters.add("Preferred vendor types: " + String.join(", ", preferredTypes));
+        }
+
+        // Get customer location and budget
+        String searchLocation = getSearchLocation(customer, null);
+        if (searchLocation != null && !searchLocation.isEmpty()) {
+            appliedFilters.add("Customer location: " + searchLocation);
+        }
+
+        Double budgetMax = getBudgetConstraint(customer, null);
+        if (budgetMax != null) {
+            appliedFilters.add("Budget constraint: ≤ $" + budgetMax);
+        }
+
+        // Find vendors with enhanced scoring
+        List<Vendor> vendors = findPersonalizedVendors(preferredTypes, searchLocation, budgetMax);
+        
+        // Convert to DTOs with enhanced metrics
+        List<SuggestedVendorDTO> suggestedVendors = vendors.stream()
+            .map(vendor -> convertToPersonalizedVendorDTO(vendor, customer))
+            .filter(Objects::nonNull)
+            .collect(Collectors.toList());
+
+        // Sort by personalized relevance score
+        suggestedVendors = sortPersonalizedVendors(suggestedVendors);
+
+        // Limit to top 15 suggestions
+        int limit = 15;
+        if (suggestedVendors.size() > limit) {
+            suggestedVendors = suggestedVendors.subList(0, limit);
+        }
+
+        // Create response
+        VendorSuggestionResponseDTO response = new VendorSuggestionResponseDTO();
+        response.setSuggestedVendors(suggestedVendors);
+        response.setTotalSuggestions(suggestedVendors.size());
+        response.setAppliedFilters(appliedFilters);
+        
+        if (suggestedVendors.isEmpty()) {
+            response.setMessage("No personalized vendor suggestions found. Please update your profile preferences.");
+        } else {
+            response.setMessage("Found " + suggestedVendors.size() + " personalized vendor suggestions based on your profile.");
+        }
+
+        return response;
+    }
+
+    private List<Vendor> findPersonalizedVendors(List<String> preferredTypes, String location, Double budgetMax) {
+        // Get all active and verified vendors
+        List<Vendor> vendors = vendorRepository.findAll().stream()
+            .filter(vendor -> vendor.getIsActive() != null && vendor.getIsActive())
+            .filter(vendor -> vendor.getVerify() != null && vendor.getVerify())
+            .collect(Collectors.toList());
+
+        // Apply filters
+        if (preferredTypes != null && !preferredTypes.isEmpty()) {
+            vendors = vendors.stream()
+                .filter(vendor -> preferredTypes.contains(vendor.getVenType()))
+                .collect(Collectors.toList());
+        }
+
+        if (location != null && !location.trim().isEmpty()) {
+            vendors = vendors.stream()
+                .filter(vendor -> vendor.getLocation() != null && 
+                        vendor.getLocation().toLowerCase().contains(location.toLowerCase()))
+                .collect(Collectors.toList());
+        }
+
+        if (budgetMax != null) {
+            vendors = vendors.stream()
+                .filter(vendor -> {
+                    if (vendor.getServices() == null || vendor.getServices().isEmpty()) {
+                        return false;
+                    }
+                    return vendor.getServices().stream()
+                        .anyMatch(service -> service.getPricing() != null && service.getPricing() <= budgetMax);
+                })
+                .collect(Collectors.toList());
+        }
+
+        return vendors;
+    }
+
+    private SuggestedVendorDTO convertToPersonalizedVendorDTO(Vendor vendor, Customer customer) {
+        try {
+            SuggestedVendorDTO dto = new SuggestedVendorDTO();
+            dto.setVendorId(vendor.getVenderId());
+            dto.setBusinessName(vendor.getBusinessName());
+            dto.setVenType(vendor.getVenType());
+            dto.setLocation(vendor.getLocation());
+            dto.setCountry(vendor.getCountry());
+            dto.setBio(vendor.getBio());
+            dto.setTelNo(vendor.getTelNo());
+            dto.setUserEmail(vendor.getUser() != null ? vendor.getUser().getEmail() : null);
+
+            // Calculate ratings and reviews
+            Double avgRating = reviewRepository.averageRatingByVendorId(vendor.getVenderId());
+            Long reviewCount = reviewRepository.countByVendorId(vendor.getVenderId());
+            dto.setAverageRating(avgRating != null ? Math.round(avgRating * 100.0) / 100.0 : null);
+            dto.setReviewCount(reviewCount != null ? reviewCount : 0L);
+
+            // Get booking and meeting counts
+            Long bookingCount = bookingRepository.countByVendorId(vendor.getVenderId());
+            Long meetingCount = meetingRepository.countByVendorId(vendor.getVenderId());
+
+            // Calculate price range
+            List<com.example.WeddingVenderMngSystem.entity.Service> services = vendor.getServices();
+            if (services != null && !services.isEmpty()) {
+                List<ServiceDTO> serviceDTOs = services.stream()
+                    .map(this::convertServiceToDTO)
+                    .collect(Collectors.toList());
+                dto.setServices(serviceDTOs);
+
+                OptionalDouble minPrice = services.stream()
+                    .filter(s -> s.getPricing() != null)
+                    .mapToDouble(com.example.WeddingVenderMngSystem.entity.Service::getPricing)
+                    .min();
+                OptionalDouble maxPrice = services.stream()
+                    .filter(s -> s.getPricing() != null)
+                    .mapToDouble(com.example.WeddingVenderMngSystem.entity.Service::getPricing)
+                    .max();
+                
+                dto.setMinServicePrice(minPrice.isPresent() ? minPrice.getAsDouble() : null);
+                dto.setMaxServicePrice(maxPrice.isPresent() ? maxPrice.getAsDouble() : null);
+            } else {
+                dto.setServices(new ArrayList<>());
+            }
+
+            // Determine location match
+            dto.setLocationMatch(determineLocationMatch(customer, vendor, null));
+
+            // Enhanced match reason including booking/meeting metrics
+            dto.setMatchReason(determinePersonalizedMatchReason(vendor, customer, bookingCount, meetingCount));
+
+            // Calculate enhanced popularity score
+            dto.setPopularityScore(calculateEnhancedPopularityScore(vendor, avgRating, reviewCount, bookingCount, meetingCount));
+
+            return dto;
+        } catch (Exception e) {
+            System.err.println("Error converting vendor " + vendor.getVenderId() + " to personalized DTO: " + e.getMessage());
+            return null;
+        }
+    }
+
+    private String determinePersonalizedMatchReason(Vendor vendor, Customer customer, Long bookingCount, Long meetingCount) {
+        List<String> reasons = new ArrayList<>();
+        
+        // Check if vendor type matches customer preferences
+        if (customer != null && customer.getPreferredVendorTypes() != null) {
+            boolean isPreferred = customer.getPreferredVendorTypes().contains(vendor.getVenType());
+            if (isPreferred) {
+                reasons.add("matches your preferred vendor type");
+            }
+        }
+        
+        // Check location match
+        String searchLocation = getSearchLocation(customer, null);
+        if (searchLocation != null && vendor.getLocation() != null &&
+            isLocationMatch(searchLocation, vendor.getLocation())) {
+            reasons.add("in your preferred location");
+        }
+        
+        // Check rating
+        Double avgRating = reviewRepository.averageRatingByVendorId(vendor.getVenderId());
+        if (avgRating != null && avgRating >= 4.0) {
+            reasons.add("highly rated (" + Math.round(avgRating * 10.0) / 10.0 + " stars)");
+        }
+        
+        // Check booking success rate
+        if (bookingCount != null && bookingCount > 0) {
+            Long completedBookings = bookingRepository.countCompletedBookingsByVendorId(vendor.getVenderId());
+            if (completedBookings != null && completedBookings > 0) {
+                double successRate = (double) completedBookings / bookingCount * 100;
+                if (successRate >= 80) {
+                    reasons.add("high booking success rate (" + Math.round(successRate) + "%)");
+                }
+            }
+        }
+        
+        // Check meeting engagement
+        if (meetingCount != null && meetingCount > 10) {
+            reasons.add("experienced with " + meetingCount + " meetings");
+        }
+        
+        // Check budget compatibility
+        Double budget = getBudgetConstraint(customer, null);
+        if (budget != null && vendor.getServices() != null) {
+            boolean hasAffordableServices = vendor.getServices().stream()
+                .anyMatch(s -> s.getPricing() != null && s.getPricing() <= budget);
+            if (hasAffordableServices) {
+                reasons.add("within your budget");
+            }
+        }
+        
+        if (reasons.isEmpty()) {
+            return "verified active vendor";
+        }
+        
+        return String.join(", ", reasons);
+    }
+
+    private Integer calculateEnhancedPopularityScore(Vendor vendor, Double avgRating, Long reviewCount, 
+                                                   Long bookingCount, Long meetingCount) {
+        int score = 0;
+        
+        // Rating component (0-40 points)
+        if (avgRating != null) {
+            score += (int) (avgRating * 8); // 5 stars = 40 points
+        }
+        
+        // Review count component (0-30 points)
+        if (reviewCount != null) {
+            score += Math.min(30, (int) (reviewCount * 2)); // Max 30 points for reviews
+        }
+        
+        // Booking count component (0-20 points)
+        if (bookingCount != null) {
+            score += Math.min(20, (int) (bookingCount * 0.5)); // Max 20 points for bookings
+        }
+        
+        // Meeting count component (0-15 points)
+        if (meetingCount != null) {
+            score += Math.min(15, (int) (meetingCount * 0.3)); // Max 15 points for meetings
+        }
+        
+        // Service variety component (0-20 points)
+        if (vendor.getServices() != null) {
+            score += Math.min(20, vendor.getServices().size() * 5); // 5 points per service, max 20
+        }
+        
+        // Profile completeness (0-10 points)
+        if (vendor.getBio() != null && !vendor.getBio().trim().isEmpty()) {
+            score += 5;
+        }
+        if (vendor.getTelNo() != null && !vendor.getTelNo().trim().isEmpty()) {
+            score += 5;
+        }
+        
+        return score;
+    }
+
+    private List<SuggestedVendorDTO> sortPersonalizedVendors(List<SuggestedVendorDTO> vendors) {
+        if (vendors.isEmpty()) {
+            return vendors;
+        }
+        
+        return vendors.stream()
+            .sorted((v1, v2) -> {
+                // Primary sort: popularity score (descending)
+                int scoreCompare = Integer.compare(
+                    v2.getPopularityScore() != null ? v2.getPopularityScore() : 0,
+                    v1.getPopularityScore() != null ? v1.getPopularityScore() : 0
+                );
+                if (scoreCompare != 0) {
+                    return scoreCompare;
+                }
+                
+                // Secondary sort: rating (descending)
+                Double rating1 = v1.getAverageRating() != null ? v1.getAverageRating() : 0.0;
+                Double rating2 = v2.getAverageRating() != null ? v2.getAverageRating() : 0.0;
+                int ratingCompare = Double.compare(rating2, rating1);
+                if (ratingCompare != 0) {
+                    return ratingCompare;
+                }
+                
+                // Tertiary sort: review count (descending)
+                Long reviews1 = v1.getReviewCount() != null ? v1.getReviewCount() : 0L;
+                Long reviews2 = v2.getReviewCount() != null ? v2.getReviewCount() : 0L;
+                return Long.compare(reviews2, reviews1);
+            })
+            .collect(Collectors.toList());
     }
 }
