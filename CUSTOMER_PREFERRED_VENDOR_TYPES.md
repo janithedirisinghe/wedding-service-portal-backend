@@ -53,15 +53,24 @@ Provides business logic for:
 
 ### Base URL: `/api/customer-preferred-vendor-types`
 
-#### Customer Operations
-- `POST /customer/{customerId}/vendor-type` - Add single vendor type preference
-- `POST /customer/{customerId}/vendor-types` - Add multiple vendor type preferences
-- `GET /customer/{customerId}` - Get all preferences for a customer
-- `GET /customer/{customerId}/vendor-type-names` - Get only vendor type names
-- `PUT /customer/{customerId}` - Update all preferences (replace existing)
-- `DELETE /customer/{customerId}/vendor-type` - Remove specific preference
-- `DELETE /customer/{customerId}/all` - Remove all preferences
-- `GET /customer/{customerId}/has-vendor-type` - Check if customer has specific preference
+#### User Authentication-Based Endpoints (Recommended)
+
+These endpoints automatically get the customer from the authenticated user context:
+
+##### My Preferences Operations
+- `GET /my-preferences` - Get all my preferred vendor types
+- `GET /my-preferences/names` - Get only my preferred vendor type names
+- `POST /my-preferences/vendor-type?vendorType={type}` - Add a vendor type preference
+- `POST /my-preferences/vendor-types` - Add multiple vendor type preferences (JSON body)
+- `PUT /my-preferences` - Update all my preferences (replace existing with new list)
+- `DELETE /my-preferences/vendor-type?vendorType={type}` - Remove specific preference
+- `DELETE /my-preferences/all` - Remove all my preferences
+- `GET /my-preferences/has-vendor-type?vendorType={type}` - Check if I have specific preference
+
+#### Admin Operations
+- `GET /admin/all` - Get all customer preferred vendor types
+- `GET /admin/user/{userId}` - Get preferences for customer by user ID
+- `GET /admin/customer/{customerId}` - Get preferences for customer by customer ID
 
 #### Analytics Operations
 - `GET /vendor-type/{vendorType}/customers` - Get customers preferring specific vendor type
@@ -74,30 +83,70 @@ Provides business logic for:
 
 ## Usage Examples
 
-### Add Vendor Type Preference
+### Get My Preferences (Authenticated User)
 ```bash
-POST /api/customer-preferred-vendor-types/customer/1/vendor-type?vendorType=photographer
+GET /api/customer-preferred-vendor-types/my-preferences
+Authorization: Bearer {jwt-token}
+```
+
+### Get My Preference Names Only
+```bash
+GET /api/customer-preferred-vendor-types/my-preferences/names
+Authorization: Bearer {jwt-token}
+```
+
+### Add Single Vendor Type Preference
+```bash
+POST /api/customer-preferred-vendor-types/my-preferences/vendor-type?vendorType=photographer
+Authorization: Bearer {jwt-token}
 ```
 
 ### Add Multiple Preferences
 ```bash
-POST /api/customer-preferred-vendor-types/customer/1/vendor-types
+POST /api/customer-preferred-vendor-types/my-preferences/vendor-types
+Authorization: Bearer {jwt-token}
 Content-Type: application/json
 
 ["photographer", "catering", "decoration"]
 ```
 
-### Get Customer Preferences
-```bash
-GET /api/customer-preferred-vendor-types/customer/1
-```
-
 ### Update All Preferences
 ```bash
-PUT /api/customer-preferred-vendor-types/customer/1
+PUT /api/customer-preferred-vendor-types/my-preferences
+Authorization: Bearer {jwt-token}
 Content-Type: application/json
 
 ["photographer", "music", "venue"]
+```
+
+### Remove Specific Preference
+```bash
+DELETE /api/customer-preferred-vendor-types/my-preferences/vendor-type?vendorType=photographer
+Authorization: Bearer {jwt-token}
+```
+
+### Remove All Preferences
+```bash
+DELETE /api/customer-preferred-vendor-types/my-preferences/all
+Authorization: Bearer {jwt-token}
+```
+
+### Check If I Have Specific Preference
+```bash
+GET /api/customer-preferred-vendor-types/my-preferences/has-vendor-type?vendorType=photographer
+Authorization: Bearer {jwt-token}
+```
+
+### Admin: Get Preferences by User ID
+```bash
+GET /api/customer-preferred-vendor-types/admin/user/123
+Authorization: Bearer {admin-jwt-token}
+```
+
+### Admin: Get All Customer Preferences
+```bash
+GET /api/customer-preferred-vendor-types/admin/all
+Authorization: Bearer {admin-jwt-token}
 ```
 
 ## Data Migration

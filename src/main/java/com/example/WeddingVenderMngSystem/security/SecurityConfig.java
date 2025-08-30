@@ -53,6 +53,7 @@ public class SecurityConfig {
                         .requestMatchers("/admin/**").hasRole("ADMIN") // Only Admins can access /admin
                         .requestMatchers("/customer/**").hasRole("CUSTOMER") // Only Customers can access /customer
                         .requestMatchers("/vendor/**").hasRole("VENDOR") // Only Vendors can access /vendor
+                        .requestMatchers("/customers/**").authenticated() // Customer profile management endpoints require authentication
                         .requestMatchers("/public/**").permitAll() // Public endpoints
                         .requestMatchers("/api/followers/**").permitAll()
                         .requestMatchers("/api/reviews/**").permitAll()// Allow public access to follower endpoints
@@ -60,6 +61,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/bookings/**").permitAll()
                         .requestMatchers("/api/payments/**").permitAll()
                         .requestMatchers("/api/notifications/**").permitAll()
+                        .requestMatchers("/api/vendor-types/**").permitAll()
                         .anyRequest().authenticated() // All other endpoints require authentication
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);

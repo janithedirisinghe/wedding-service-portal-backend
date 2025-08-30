@@ -45,8 +45,24 @@ public class CustomerController {
         }
     }
 
-    @PutMapping(value = "/editCustomer/{userId}", consumes = {"multipart/form-data"})
+    // Update customer profile with JSON data (without file upload)
+    @PutMapping(value = "/editCustomer/{userId}")
     public ResponseEntity<CustomerDTO> updateCustomer(
+            @PathVariable Long userId, 
+            @RequestBody CustomerDTO customerDTO) {
+        try {
+            CustomerDTO updatedCustomer = customerService.updateCustomerByUserId(userId, customerDTO);
+            return ResponseEntity.ok(updatedCustomer);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.notFound().build();
+        } catch (Exception e) {
+            return ResponseEntity.status(500).build();
+        }
+    }
+
+    // Update customer profile with file upload (multipart/form-data)
+    @PutMapping(value = "/editCustomerWithImage/{userId}", consumes = {"multipart/form-data"})
+    public ResponseEntity<CustomerDTO> updateCustomerWithImage(
             @PathVariable Long userId, 
             @RequestPart("customer") CustomerDTO customerDTO,
             @RequestPart(value = "profileImage", required = false) MultipartFile profileImage) {

@@ -62,6 +62,13 @@ public class CustomerPreferredVendorTypeService {
     }
     
     /**
+     * Get all customer preferred vendor types
+     */
+    public List<CustomerPreferredVendorType> getAllCustomerPreferredVendorTypes() {
+        return customerPreferredVendorTypeRepository.findAll();
+    }
+    
+    /**
      * Get all preferred vendor types for a customer
      */
     public List<CustomerPreferredVendorType> getCustomerPreferredVendorTypes(Long customerId) {
