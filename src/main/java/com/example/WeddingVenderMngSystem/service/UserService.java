@@ -83,6 +83,40 @@ public class UserService {
         return userRepository.findById(userId).orElse(null);
     }
 
+    public boolean resetPasswordWithOtp(String email, String otp, String newPassword) {
+        try {
+            User user = findByEmail(email);
+            if (user == null) {
+                return false;
+            }
+
+            // Check if OTP is valid
+            if (user.getOtpCode() == null || !user.getOtpCode().equals(otp)) {
+                return false;
+            }
+
+            // Check if OTP is expired
+            if (user.getOtpExpiration() == null || user.getOtpExpiration().isBefore(java.time.LocalDateTime.now())) {
+                return false;
+            }
+
+            // Update password and clear OTP
+            user.setPassword(passwordEncoder.encode(newPassword));
+            user.setOtpCode(null);
+            user.setOtpExpiration(null);
+            userRepository.save(user);
+            return true;
+
+        } catch (Exception e) {
+            System.out.println("Error resetting password: " + e.getMessage());
+            return false;
+        }
+    }
+
+    public User saveUser(User user) {
+        return userRepository.save(user);
+    }
+
 }
 
 
