@@ -1,6 +1,8 @@
 package com.example.WeddingVenderMngSystem.service;
 
 import com.example.WeddingVenderMngSystem.dto.ServiceDTO;
+import com.example.WeddingVenderMngSystem.entity.AdminNotificationType;
+import com.example.WeddingVenderMngSystem.entity.NotificationPriority;
 import com.example.WeddingVenderMngSystem.entity.Vendor;
 import com.example.WeddingVenderMngSystem.repository.ServiceRepository;
 import com.example.WeddingVenderMngSystem.repository.VendorRepository;
@@ -8,7 +10,6 @@ import com.example.WeddingVenderMngSystem.repository.FollowerRepository;
 import com.example.WeddingVenderMngSystem.repository.ReviewRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -27,6 +28,9 @@ public class ServiceService {
 
     @Autowired
     private ReviewRepository reviewRepository;
+
+    @Autowired
+    private AdminNotificationService adminNotificationService;
 
     // Create a new Service
     public ServiceDTO createService(ServiceDTO serviceDTO) {
@@ -75,6 +79,18 @@ public class ServiceService {
     if (savedService.getCreatedAt() != null) serviceDTO.setCreatedAt(savedService.getCreatedAt().toString());
     if (savedService.getUpdatedAt() != null) serviceDTO.setUpdatedAt(savedService.getUpdatedAt().toString());
     serviceDTO.setIsDeleted(savedService.getIsDeleted());
+
+    // Create admin notification for new service creation
+    String title = "New Service Created: " + savedService.getName();
+    String message = "Vendor " + vendor.getUser().getUsername() + " has created a new service: " + savedService.getName();
+    adminNotificationService.createNotification(
+        AdminNotificationType.SERVICE_CREATED,
+        title,
+        message,
+        savedService.getServiceId(),
+        NotificationPriority.NORMAL
+    );
+
     return serviceDTO;
     }
 

@@ -21,6 +21,9 @@ public class SupportService {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private AdminNotificationService adminNotificationService;
+
     public List<SupportDTO> getAllSupports() {
         return supportRepository.findAll().stream().map(this::convertToDTO).collect(Collectors.toList());
     }
@@ -49,6 +52,18 @@ public class SupportService {
         support.setUser(user);
 
         Support savedSupport = supportRepository.save(support);
+
+        // Create admin notification for new support request
+        String title = "New Support Request: " + support.getTopic();
+        String message = "User " + user.getUsername() + " (" + user.getEmail() + ") has submitted a support request with severity: " + support.getSeverity();
+        adminNotificationService.createNotification(
+            com.example.WeddingVenderMngSystem.entity.AdminNotificationType.SUPPORT_REQUEST,
+            title,
+            message,
+            savedSupport.getSupportId(),
+            com.example.WeddingVenderMngSystem.entity.NotificationPriority.HIGH
+        );
+
         return convertToDTO(savedSupport);
     }
 

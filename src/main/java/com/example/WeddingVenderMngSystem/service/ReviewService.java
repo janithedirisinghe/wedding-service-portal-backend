@@ -2,7 +2,9 @@ package com.example.WeddingVenderMngSystem.service;
 
 import com.example.WeddingVenderMngSystem.dto.ReviewDTO;
 import com.example.WeddingVenderMngSystem.dto.ReviewWithVendorDTO;
+import com.example.WeddingVenderMngSystem.entity.AdminNotificationType;
 import com.example.WeddingVenderMngSystem.entity.Customer;
+import com.example.WeddingVenderMngSystem.entity.NotificationPriority;
 import com.example.WeddingVenderMngSystem.entity.Review;
 import com.example.WeddingVenderMngSystem.entity.Vendor;
 import com.example.WeddingVenderMngSystem.exception.UnauthorizedVendorAccessException;
@@ -28,6 +30,9 @@ public class ReviewService {
     @Autowired
     private VendorRepository vendorRepository;
 
+    @Autowired
+    private AdminNotificationService adminNotificationService;
+
     public List<ReviewDTO> getAllReviews() {
         return reviewRepository.findAll().stream().map(this::convertToDTO).collect(Collectors.toList());
     }
@@ -52,6 +57,18 @@ public class ReviewService {
         review.setVendor(vendor);
 
         Review savedReview = reviewRepository.save(review);
+
+        // Create admin notification for new review
+        String title = "New Review Received";
+        String message = "Customer " + customer.getUser().getUsername() + " has reviewed vendor " + vendor.getUser().getUsername() + " with rating: " + savedReview.getRating();
+        adminNotificationService.createNotification(
+            AdminNotificationType.REVIEW_RECEIVED,
+            title,
+            message,
+            savedReview.getReviewId(),
+            NotificationPriority.NORMAL
+        );
+
         return convertToDTO(savedReview);
     }
 

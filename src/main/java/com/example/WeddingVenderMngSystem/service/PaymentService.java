@@ -3,8 +3,10 @@ package com.example.WeddingVenderMngSystem.service;
 import com.example.WeddingVenderMngSystem.dto.PaymentConfirmationDto;
 import com.example.WeddingVenderMngSystem.dto.PaymentRequestDto;
 import com.example.WeddingVenderMngSystem.dto.PaymentResponseDto;
+import com.example.WeddingVenderMngSystem.entity.AdminNotificationType;
 import com.example.WeddingVenderMngSystem.entity.Booking;
 import com.example.WeddingVenderMngSystem.entity.Customer;
+import com.example.WeddingVenderMngSystem.entity.NotificationPriority;
 import com.example.WeddingVenderMngSystem.entity.Payment;
 import com.example.WeddingVenderMngSystem.entity.Payment.PaymentStatus;
 import com.example.WeddingVenderMngSystem.repository.BookingRepository;
@@ -39,6 +41,9 @@ public class PaymentService {
     
     @Autowired
     private CustomerRepository customerRepository;
+
+    @Autowired
+    private AdminNotificationService adminNotificationService;
 
     /**
      * Create a payment intent for a booking
@@ -149,6 +154,17 @@ public class PaymentService {
                 Booking booking = payment.getBooking();
                 booking.setStatus(Booking.BookingStatus.CONFIRMED);
                 bookingRepository.save(booking);
+
+                // Create admin notification for successful payment
+                String title = "Payment Received";
+                String message = "Customer " + customer.getUser().getUsername() + " has made a payment of $" + payment.getAmount() + " for booking ID: " + booking.getBookingId();
+                adminNotificationService.createNotification(
+                    AdminNotificationType.PAYMENT_RECEIVED,
+                    title,
+                    message,
+                    payment.getPaymentId(),
+                    NotificationPriority.HIGH
+                );
                 break;
                 
             case "processing":

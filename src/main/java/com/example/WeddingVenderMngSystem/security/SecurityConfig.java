@@ -63,6 +63,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/notifications/**").permitAll()
                         .requestMatchers("/api/vendor-types/**").permitAll()
                         .requestMatchers("/api/supports/**").permitAll()
+                        .requestMatchers("/api/admin/notifications/**").hasRole("ADMIN")
                         .anyRequest().authenticated() // All other endpoints require authentication
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);

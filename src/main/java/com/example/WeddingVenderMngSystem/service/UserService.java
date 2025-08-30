@@ -1,5 +1,7 @@
 package com.example.WeddingVenderMngSystem.service;
 
+import com.example.WeddingVenderMngSystem.entity.AdminNotificationType;
+import com.example.WeddingVenderMngSystem.entity.NotificationPriority;
 import com.example.WeddingVenderMngSystem.entity.Role;
 import com.example.WeddingVenderMngSystem.entity.User;
 import com.example.WeddingVenderMngSystem.repository.UserRepository;
@@ -15,6 +17,9 @@ public class UserService {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private AdminNotificationService adminNotificationService;
 
     private final PasswordEncoder passwordEncoder;
 
@@ -36,12 +41,24 @@ public class UserService {
             // Encrypt the password before saving the user
             user.setPassword(passwordEncoder.encode(user.getPassword()));
 
-
         } catch (Exception e) {
             System.out.println(e);
         }
 
-        return Optional.of(userRepository.save(user));
+        User savedUser = userRepository.save(user);
+
+        // Create admin notification for new user registration
+        String title = "New User Registered";
+        String message = "A new " + savedUser.getRole().name().toLowerCase() + " has registered: " + savedUser.getUsername() + " (" + savedUser.getEmail() + ")";
+        adminNotificationService.createNotification(
+            AdminNotificationType.USER_REGISTERED,
+            title,
+            message,
+            savedUser.getUserId(),
+            NotificationPriority.NORMAL
+        );
+
+        return Optional.of(savedUser);
     }
 
     public User findByEmail(String email) {
