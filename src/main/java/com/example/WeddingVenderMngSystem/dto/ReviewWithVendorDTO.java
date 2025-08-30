@@ -1,6 +1,5 @@
 package com.example.WeddingVenderMngSystem.dto;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -8,27 +7,19 @@ import java.util.Date;
 
 @Getter
 @Setter
-public class ReviewDTO {
+public class ReviewWithVendorDTO {
     private Long reviewId;
     private int rating;
     private String comment;
-    private Long customerId; // Note: Frontend sends userId here, backend maps to actual customerId
     private String customerName; // Customer's full name (firstName + lastName)
-    @JsonIgnore // Don't include in JSON response
-    private Long vendorId; // For input purposes (frontend sends this)
+    private Long vendorId;
     private String vendorName; // Vendor's business name
     private String vendorType; // Vendor's type (venType)
-    private Date createdAt = new Date();
+    private Date createdAt;
+
+    // Getters and Setters
     public Long getReviewId() {
         return reviewId;
-    }
-
-    public Date getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(Date createdAt) {
-        this.createdAt = createdAt;
     }
 
     public void setReviewId(Long reviewId) {
@@ -49,14 +40,6 @@ public class ReviewDTO {
 
     public void setComment(String comment) {
         this.comment = comment;
-    }
-
-    public Long getCustomerId() {
-        return customerId;
-    }
-
-    public void setCustomerId(Long customerId) {
-        this.customerId = customerId;
     }
 
     public String getCustomerName() {
@@ -89,5 +72,13 @@ public class ReviewDTO {
 
     public void setVendorType(String vendorType) {
         this.vendorType = vendorType;
+    }
+
+    public Date getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(Date createdAt) {
+        this.createdAt = createdAt;
     }
 }

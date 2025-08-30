@@ -1,9 +1,13 @@
 package com.example.WeddingVenderMngSystem.service;
 
 import com.example.WeddingVenderMngSystem.dto.CustomerDTO;
+import com.example.WeddingVenderMngSystem.dto.CustomerStatsDTO;
 import com.example.WeddingVenderMngSystem.entity.Customer;
 import com.example.WeddingVenderMngSystem.entity.User;
+import com.example.WeddingVenderMngSystem.repository.BookingRepository;
 import com.example.WeddingVenderMngSystem.repository.CustomerRepository;
+import com.example.WeddingVenderMngSystem.repository.FollowerRepository;
+import com.example.WeddingVenderMngSystem.repository.ReviewRepository;
 import com.example.WeddingVenderMngSystem.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -24,6 +28,15 @@ public class CustomerService {
 
     @Autowired
     private SupabaseStorageService supabaseStorageService;
+
+    @Autowired
+    private FollowerRepository followerRepository;
+
+    @Autowired
+    private ReviewRepository reviewRepository;
+
+    @Autowired
+    private BookingRepository bookingRepository;
 
         /**
          * Admin: Get all customers with full details
@@ -117,6 +130,17 @@ public class CustomerService {
     public CustomerDTO getCustomerDTOByUserId(Long userId) {
         Customer customer = getCustomerByUserId(userId);
         return convertToDTO(customer);
+    }
+
+    public CustomerStatsDTO getCustomerStatsByUserId(Long userId) {
+        Customer customer = getCustomerByUserId(userId);
+        Long customerId = customer.getCustomerId();
+
+        Long favoritesCount = followerRepository.countActiveFollowingsByCustomerId(customerId);
+        Long reviewsCount = reviewRepository.countByCustomer_CustomerId(customerId);
+        Long bookingsCount = bookingRepository.countByCustomer_CustomerId(customerId);
+
+        return new CustomerStatsDTO(favoritesCount, reviewsCount, bookingsCount);
     }
 
     public CustomerDTO updateCustomer(Long customerId, CustomerDTO customerDTO) {

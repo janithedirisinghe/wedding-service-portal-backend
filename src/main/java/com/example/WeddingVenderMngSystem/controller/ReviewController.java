@@ -1,6 +1,7 @@
 package com.example.WeddingVenderMngSystem.controller;
 
 import com.example.WeddingVenderMngSystem.dto.ReviewDTO;
+import com.example.WeddingVenderMngSystem.dto.ReviewWithVendorDTO;
 import com.example.WeddingVenderMngSystem.exception.UnauthorizedVendorAccessException;
 import com.example.WeddingVenderMngSystem.service.ReviewService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,6 +46,18 @@ public class ReviewController {
         try {
             List<ReviewDTO> reviews = reviewService.getReviewsByVendorId(venderId);
             return ResponseEntity.ok(reviews);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
+    @GetMapping("/customer/{userId}")
+    public ResponseEntity<List<ReviewWithVendorDTO>> getReviewsByCustomerUserId(@PathVariable Long userId) {
+        try {
+            List<ReviewWithVendorDTO> reviews = reviewService.getReviewsByCustomerUserIdWithVendorDetails(userId);
+            return ResponseEntity.ok(reviews);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
         } catch (Exception e) {
             return ResponseEntity.badRequest().build();
         }

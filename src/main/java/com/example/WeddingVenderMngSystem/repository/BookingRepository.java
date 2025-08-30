@@ -40,4 +40,7 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
     
     // Analytics methods
     Long countByStatus(BookingStatus status);
+    
+    // Count bookings by customer ID
+    Long countByCustomer_CustomerId(Long customerId);
 }

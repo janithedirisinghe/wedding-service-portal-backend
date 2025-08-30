@@ -131,4 +131,33 @@ public interface VendorRepository extends JpaRepository<Vendor, Long> {
            "LOWER(v.Location) LIKE LOWER(CONCAT('%', :query, '%')) AND " +
            "v.isActive = true AND v.verify = true")
     List<String> findLocationSuggestions(@Param("query") String query, Pageable pageable);
+    
+    // Vendor Suggestion Methods
+    @Query("SELECT DISTINCT v FROM Vendor v LEFT JOIN v.services s WHERE " +
+           "v.isActive = true AND v.verify = true AND " +
+           "(:venTypes IS NULL OR v.venType IN :venTypes) AND " +
+           "(:location IS NULL OR LOWER(v.Location) LIKE LOWER(CONCAT('%', :location, '%'))) AND " +
+           "(:country IS NULL OR LOWER(v.Country) = LOWER(:country)) AND " +
+           "(:minPrice IS NULL OR s.pricing >= :minPrice) AND " +
+           "(:maxPrice IS NULL OR s.pricing <= :maxPrice)")
+    List<Vendor> findSuggestedVendors(@Param("venTypes") List<String> venTypes,
+                                     @Param("location") String location,
+                                     @Param("country") String country,
+                                     @Param("minPrice") Double minPrice,
+                                     @Param("maxPrice") Double maxPrice);
+    
+    @Query("SELECT DISTINCT v FROM Vendor v LEFT JOIN v.services s WHERE " +
+           "v.isActive = true AND v.verify = true AND " +
+           "(:venTypes IS NULL OR v.venType IN :venTypes) AND " +
+           "(:location IS NULL OR LOWER(v.Location) LIKE LOWER(CONCAT('%', :location, '%'))) AND " +
+           "(:country IS NULL OR LOWER(v.Country) = LOWER(:country)) AND " +
+           "(:minPrice IS NULL OR s.pricing >= :minPrice) AND " +
+           "(:maxPrice IS NULL OR s.pricing <= :maxPrice) " +
+           "ORDER BY v.venderId")
+    Page<Vendor> findSuggestedVendorsWithPagination(@Param("venTypes") List<String> venTypes,
+                                                   @Param("location") String location,
+                                                   @Param("country") String country,
+                                                   @Param("minPrice") Double minPrice,
+                                                   @Param("maxPrice") Double maxPrice,
+                                                   Pageable pageable);
 }

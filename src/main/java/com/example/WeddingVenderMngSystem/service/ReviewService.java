@@ -1,6 +1,7 @@
 package com.example.WeddingVenderMngSystem.service;
 
 import com.example.WeddingVenderMngSystem.dto.ReviewDTO;
+import com.example.WeddingVenderMngSystem.dto.ReviewWithVendorDTO;
 import com.example.WeddingVenderMngSystem.entity.Customer;
 import com.example.WeddingVenderMngSystem.entity.Review;
 import com.example.WeddingVenderMngSystem.entity.Vendor;
@@ -121,6 +122,36 @@ public class ReviewService {
         return reviews.stream().map(this::convertToDTO).collect(Collectors.toList());
     }
 
+    // Method to get reviews by customer user ID
+    public List<ReviewDTO> getReviewsByCustomerUserId(Long userId) {
+        // Find customer by user ID
+        Optional<Customer> customerOpt = customerRepository.findByUser_UserId(userId);
+        if (customerOpt.isEmpty()) {
+            throw new RuntimeException("Customer not found for user ID: " + userId);
+        }
+        Customer customer = customerOpt.get();
+        Long customerId = customer.getCustomerId();
+        
+        // Fetch and return the reviews for this customer
+        List<Review> reviews = reviewRepository.findByCustomer_CustomerId(customerId);
+        return reviews.stream().map(this::convertToDTO).collect(Collectors.toList());
+    }
+
+    // Method to get reviews by customer user ID with vendor details
+    public List<ReviewWithVendorDTO> getReviewsByCustomerUserIdWithVendorDetails(Long userId) {
+        // Find customer by user ID
+        Optional<Customer> customerOpt = customerRepository.findByUser_UserId(userId);
+        if (customerOpt.isEmpty()) {
+            throw new RuntimeException("Customer not found for user ID: " + userId);
+        }
+        Customer customer = customerOpt.get();
+        Long customerId = customer.getCustomerId();
+        
+        // Fetch and return the reviews for this customer
+        List<Review> reviews = reviewRepository.findByCustomer_CustomerId(customerId);
+        return reviews.stream().map(this::convertToReviewWithVendorDTO).collect(Collectors.toList());
+    }
+
     private ReviewDTO convertToDTO(Review review) {
         ReviewDTO dto = new ReviewDTO();
         dto.setReviewId(review.getReviewId());
@@ -146,6 +177,40 @@ public class ReviewService {
         }
         
         dto.setVendorId(review.getVendor() != null ? review.getVendor().getVenderId() : null);
+        return dto;
+    }
+
+    private ReviewWithVendorDTO convertToReviewWithVendorDTO(Review review) {
+        ReviewWithVendorDTO dto = new ReviewWithVendorDTO();
+        dto.setReviewId(review.getReviewId());
+        dto.setRating(review.getRating());
+        dto.setComment(review.getComment());
+        dto.setCreatedAt(review.getCreatedAt());
+        
+        // Set customer name
+        if (review.getCustomer() != null) {
+            String firstName = review.getCustomer().getFirstName();
+            String lastName = review.getCustomer().getLastName();
+            String fullName = "";
+            
+            if (firstName != null && lastName != null) {
+                fullName = firstName + " " + lastName;
+            } else if (firstName != null) {
+                fullName = firstName;
+            } else if (lastName != null) {
+                fullName = lastName;
+            }
+            
+            dto.setCustomerName(fullName.trim());
+        }
+        
+        // Set vendor details
+        if (review.getVendor() != null) {
+            dto.setVendorId(review.getVendor().getVenderId());
+            dto.setVendorName(review.getVendor().getBusinessName());
+            dto.setVendorType(review.getVendor().getVenType());
+        }
+        
         return dto;
     }
 }
