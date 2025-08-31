@@ -2,6 +2,7 @@ package com.example.WeddingVenderMngSystem.service;
 
 import com.example.WeddingVenderMngSystem.dto.VendorStatsDTO;
 import com.example.WeddingVenderMngSystem.dto.VendorUpdateDTO;
+import com.example.WeddingVenderMngSystem.dto.VendorListDTO;
 import com.example.WeddingVenderMngSystem.entity.User;
 import com.example.WeddingVenderMngSystem.entity.Vendor;
 import com.example.WeddingVenderMngSystem.repository.UserRepository;
@@ -173,6 +174,26 @@ public class VendorService {
     // Get all vendors for admin
     public List<Vendor> getAllVendors() {
         return vendorRepository.findAll();
+    }
+
+    // Get all vendors as DTO list for frontend
+    public List<VendorListDTO> getAllVendorsAsDTO() {
+        List<Vendor> vendors = vendorRepository.findAll();
+        return vendors.stream()
+                .map(this::convertToVendorListDTO)
+                .collect(java.util.stream.Collectors.toList());
+    }
+
+    // Convert Vendor entity to VendorListDTO
+    private VendorListDTO convertToVendorListDTO(Vendor vendor) {
+        VendorListDTO dto = new VendorListDTO();
+        dto.setVenderId(vendor.getVenderId());
+        dto.setBusinessName(vendor.getBusinessName());
+        dto.setProfileImageUrl(vendor.getProfileImageUrl());
+        dto.setVenType(vendor.getVenType());
+        dto.setIsActive(vendor.getIsActive());
+        dto.setVerify(vendor.getVerify());
+        return dto;
     }
 
     // Update vendor verification status for admin

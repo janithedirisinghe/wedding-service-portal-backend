@@ -137,6 +137,44 @@ public class ChatService {
     }
 
     /**
+     * Get customer's chat rooms by userId
+     */
+    public List<ChatRoomDTO> getCustomerChatRooms(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        if (user.getCustomer() == null) {
+            throw new RuntimeException("User is not a customer");
+        }
+
+        Long customerId = user.getCustomer().getCustomerId();
+        List<ChatRoom> chatRooms = chatRoomRepository.findByCustomerIdOrderByLastMessageAtDesc(customerId);
+
+        return chatRooms.stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Get vendor's chat rooms by userId
+     */
+    public List<ChatRoomDTO> getVendorChatRooms(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        if (user.getVendor() == null) {
+            throw new RuntimeException("User is not a vendor");
+        }
+
+        Long vendorId = user.getVendor().getVenderId();
+        List<ChatRoom> chatRooms = chatRoomRepository.findByVendorIdOrderByLastMessageAtDesc(vendorId);
+
+        return chatRooms.stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+    }
+
+    /**
      * Get messages in a chat room
      */
     public List<ChatMessageDTO> getChatMessages(Long userId, Long chatRoomId, int page, int size) {
@@ -201,9 +239,11 @@ public class ChatService {
         dto.setRoomName(chatRoom.getRoomName());
         dto.setCustomerId(chatRoom.getCustomer().getCustomerId());
         dto.setCustomerName(chatRoom.getCustomer().getUser().getUsername());
+        dto.setCustomerProfileImageUrl(chatRoom.getCustomer().getProfileImageUrl());
         dto.setVendorId(chatRoom.getVendor().getVenderId());
         dto.setVendorName(chatRoom.getVendor().getUser().getUsername());
         dto.setVendorBusinessName(chatRoom.getVendor().getBusinessName());
+        dto.setVendorProfileImageUrl(chatRoom.getVendor().getProfileImageUrl());
         dto.setCreatedAt(chatRoom.getCreatedAt());
         dto.setLastMessageAt(chatRoom.getLastMessageAt());
         dto.setStatus(chatRoom.getStatus());

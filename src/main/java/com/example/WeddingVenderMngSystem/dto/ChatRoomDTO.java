@@ -21,6 +21,8 @@ public class ChatRoomDTO {
     private Long vendorId;
     private String vendorName;
     private String vendorBusinessName;
+    private String vendorProfileImageUrl;
+    private String customerProfileImageUrl;
     private LocalDateTime createdAt;
     private LocalDateTime lastMessageAt;
     private ChatRoom.ChatStatus status;
@@ -121,5 +123,21 @@ public class ChatRoomDTO {
 
     public void setLastMessageAt(LocalDateTime lastMessageAt) {
         this.lastMessageAt = lastMessageAt;
+    }
+
+    public String getVendorProfileImageUrl() {
+        return vendorProfileImageUrl;
+    }
+
+    public void setVendorProfileImageUrl(String vendorProfileImageUrl) {
+        this.vendorProfileImageUrl = vendorProfileImageUrl;
+    }
+
+    public String getCustomerProfileImageUrl() {
+        return customerProfileImageUrl;
+    }
+
+    public void setCustomerProfileImageUrl(String customerProfileImageUrl) {
+        this.customerProfileImageUrl = customerProfileImageUrl;
     }
 }
