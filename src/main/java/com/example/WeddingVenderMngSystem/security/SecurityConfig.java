@@ -43,14 +43,27 @@ public class SecurityConfig {
                     return corsConfig;
                 }))// Disable CSRF for API requests
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/auth/**").permitAll() // Public endpoints for login/register
+                        .requestMatchers("/auth/login", "/auth/register", "/auth/verify-otp", "/auth/vendor-complete-info", "/auth/customer-profile").permitAll() // Public auth endpoints
+                        .requestMatchers("/auth/change-password").authenticated() // Change password requires authentication
                         .requestMatchers("/services/**").permitAll()
                         .requestMatchers("/vendors/**").permitAll()
                         .requestMatchers("/posts/**").permitAll()
+                        .requestMatchers("/ws/**").permitAll() // WebSocket endpoint
+                        .requestMatchers("/api/chat/**").authenticated() // Chat API requires authentication
                         .requestMatchers("/admin/**").hasRole("ADMIN") // Only Admins can access /admin
                         .requestMatchers("/customer/**").hasRole("CUSTOMER") // Only Customers can access /customer
                         .requestMatchers("/vendor/**").hasRole("VENDOR") // Only Vendors can access /vendor
+                        .requestMatchers("/customers/**").authenticated() // Customer profile management endpoints require authentication
                         .requestMatchers("/public/**").permitAll() // Public endpoints
+                        .requestMatchers("/api/followers/**").permitAll()
+                        .requestMatchers("/api/reviews/**").permitAll()// Allow public access to follower endpoints
+                        .requestMatchers("/api/meetings/**").permitAll()
+                        .requestMatchers("/api/bookings/**").permitAll()
+                        .requestMatchers("/api/payments/**").permitAll()
+                        .requestMatchers("/api/notifications/**").permitAll()
+                        .requestMatchers("/api/vendor-types/**").permitAll()
+                        .requestMatchers("/api/supports/**").permitAll()
+                        .requestMatchers("/api/admin/notifications/**").hasRole("ADMIN")
                         .anyRequest().authenticated() // All other endpoints require authentication
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);

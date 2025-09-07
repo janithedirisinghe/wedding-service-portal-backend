@@ -17,6 +17,12 @@ public class PostDTO {
 
     private Long vendorId;
 
+    private Long userId;
+
+    private String vendorName;
+
+    private String vendorProfileImage;
+
     private List<String> itemUrls;
 
     public Long getPostId() {
@@ -51,6 +57,14 @@ public class PostDTO {
         this.vendorId = vendorId;
     }
 
+    public Long getUserId() {
+        return userId;
+    }
+
+    public void setUserId(Long userId) {
+        this.userId = userId;
+    }
+
     public void setDate(String date) {
         this.date = date;
     }
@@ -65,5 +79,21 @@ public class PostDTO {
 
     public void setItemUrls(List<String> itemUrls) {
         this.itemUrls = itemUrls;
+    }
+
+    public String getVendorName() {
+        return vendorName;
+    }
+
+    public void setVendorName(String vendorName) {
+        this.vendorName = vendorName;
+    }
+
+    public String getVendorProfileImage() {
+        return vendorProfileImage;
+    }
+
+    public void setVendorProfileImage(String vendorProfileImage) {
+        this.vendorProfileImage = vendorProfileImage;
     }
 }

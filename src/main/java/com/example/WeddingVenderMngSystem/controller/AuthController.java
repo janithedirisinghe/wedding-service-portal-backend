@@ -2,20 +2,28 @@ package com.example.WeddingVenderMngSystem.controller;
 
 import com.example.WeddingVenderMngSystem.common.EmailService;
 import com.example.WeddingVenderMngSystem.common.OtpService;
+import com.example.WeddingVenderMngSystem.dto.ChangePasswordRequest;
+import com.example.WeddingVenderMngSystem.dto.CustomerDTO;
+import com.example.WeddingVenderMngSystem.dto.ForgotPasswordRequest;
 import com.example.WeddingVenderMngSystem.dto.LoginDto;
 import com.example.WeddingVenderMngSystem.dto.OtpVerificationRequest;
+import com.example.WeddingVenderMngSystem.dto.ResetPasswordRequest;
 import com.example.WeddingVenderMngSystem.entity.Role;
 import com.example.WeddingVenderMngSystem.entity.User;
 import com.example.WeddingVenderMngSystem.entity.Vendor;
+import com.example.WeddingVenderMngSystem.entity.Customer;
 import com.example.WeddingVenderMngSystem.security.JwtUtil;
 import com.example.WeddingVenderMngSystem.service.UserService;
 import com.example.WeddingVenderMngSystem.service.VendorService;
+import com.example.WeddingVenderMngSystem.service.CustomerService;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
@@ -42,6 +50,9 @@ public class AuthController {
 
     @Autowired
     private VendorService vendorService;
+
+    @Autowired
+    private CustomerService customerService;
 
     @PostMapping("/login")
     public ResponseEntity<Map<String, Object>> login(@RequestBody LoginDto loginDto, HttpServletResponse response) {
@@ -148,4 +159,173 @@ public class AuthController {
         }
     }
 
+    @PostMapping("/customer-complete-info")
+    public ResponseEntity<Map<String, String>> registerCustomer(@RequestParam Long userId, @RequestBody Customer customerDetails) {
+        try {
+            Customer savedCustomer = customerService.registerCustomer(userId, customerDetails);
+
+            Map<String, String> response = new HashMap<>();
+            response.put("message", "Customer registered successfully!");
+            response.put("customerId", savedCustomer.getCustomerId().toString());
+
+            return ResponseEntity.ok(response);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Collections.singletonMap("error", e.getMessage()));
+        } catch (IllegalStateException e) {
+            return ResponseEntity.badRequest().body(Collections.singletonMap("error", e.getMessage()));
+        }
+    }
+
+    @GetMapping("/customer-profile")
+    public ResponseEntity<Map<String, Object>> getCustomerProfile(@RequestParam Long userId) {
+        try {
+            CustomerDTO customer = customerService.getCustomerDTOByUserId(userId);
+            
+            Map<String, Object> response = new HashMap<>();
+            response.put("customer", customer);
+            response.put("message", "Customer profile retrieved successfully!");
+            
+            return ResponseEntity.ok(response);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Collections.singletonMap("error", e.getMessage()));
+        }
+    }
+
+    // ------------------- Change Password API -------------------
+    @PostMapping("/change-password")
+    public ResponseEntity<Map<String, String>> changePassword(@RequestBody ChangePasswordRequest request) {
+        try {
+            // Get current authenticated user
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            if (authentication == null || !authentication.isAuthenticated()) {
+                return ResponseEntity.badRequest().body(Collections.singletonMap("error", "User not authenticated"));
+            }
+
+            String username = authentication.getName();
+            
+            // Validate password confirmation
+            if (!request.getNewPassword().equals(request.getConfirmPassword())) {
+                return ResponseEntity.badRequest().body(Collections.singletonMap("error", "New password and confirmation do not match"));
+            }
+
+            // Validate password length
+            if (request.getNewPassword().length() < 6) {
+                return ResponseEntity.badRequest().body(Collections.singletonMap("error", "New password must be at least 6 characters long"));
+            }
+
+            // Check if new password is different from current password
+            if (request.getCurrentPassword().equals(request.getNewPassword())) {
+                return ResponseEntity.badRequest().body(Collections.singletonMap("error", "New password must be different from current password"));
+            }
+
+            // Attempt to change password
+            boolean success = userService.changePassword(username, request.getCurrentPassword(), request.getNewPassword());
+            
+            if (success) {
+                return ResponseEntity.ok(Collections.singletonMap("message", "Password changed successfully"));
+            } else {
+                return ResponseEntity.badRequest().body(Collections.singletonMap("error", "Current password is incorrect"));
+            }
+
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Collections.singletonMap("error", "An error occurred while changing password: " + e.getMessage()));
+        }
+    }
+
+    // ------------------- Forgot Password APIs -------------------
+    @PostMapping("/forgot-password")
+    public ResponseEntity<Map<String, String>> forgotPassword(@RequestBody ForgotPasswordRequest request) {
+        try {
+            // Validate email
+            if (request.getEmail() == null || request.getEmail().trim().isEmpty()) {
+                return ResponseEntity.badRequest().body(Collections.singletonMap("error", "Email is required"));
+            }
+
+            // Find user by email
+            User user = userService.findByEmail(request.getEmail().trim());
+            if (user == null) {
+                return ResponseEntity.badRequest().body(Collections.singletonMap("error", "No account found with this email address"));
+            }
+
+            // Generate OTP
+            String otp = otpService.generateOtp();
+            user.setOtpCode(otp);
+            user.setOtpExpiration(LocalDateTime.now().plusMinutes(5)); // OTP expires in 5 minutes
+
+            // Save user with OTP
+            userService.saveUser(user);
+
+            // Send OTP via email
+            emailService.sendPasswordResetOtpEmail(user.getEmail(), otp, user.getUsername());
+
+            // Prepare response
+            Map<String, String> response = new HashMap<>();
+            response.put("message", "OTP has been sent to your email");
+            response.put("email", user.getEmail());
+            response.put("username", user.getUsername());
+            response.put("userId", user.getUserId().toString());
+
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Collections.singletonMap("error", "An error occurred while processing forgot password request: " + e.getMessage()));
+        }
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<Map<String, String>> resetPassword(@RequestBody ResetPasswordRequest request) {
+        try {
+            // Validate required fields
+            if (request.getEmail() == null || request.getEmail().trim().isEmpty()) {
+                return ResponseEntity.badRequest().body(Collections.singletonMap("error", "Email is required"));
+            }
+
+            if (request.getOtp() == null || request.getOtp().trim().isEmpty()) {
+                return ResponseEntity.badRequest().body(Collections.singletonMap("error", "OTP is required"));
+            }
+
+            if (request.getNewPassword() == null || request.getNewPassword().trim().isEmpty()) {
+                return ResponseEntity.badRequest().body(Collections.singletonMap("error", "New password is required"));
+            }
+
+            if (request.getConfirmPassword() == null || request.getConfirmPassword().trim().isEmpty()) {
+                return ResponseEntity.badRequest().body(Collections.singletonMap("error", "Password confirmation is required"));
+            }
+
+            // Validate password confirmation
+            if (!request.getNewPassword().equals(request.getConfirmPassword())) {
+                return ResponseEntity.badRequest().body(Collections.singletonMap("error", "New password and confirmation do not match"));
+            }
+
+            // Validate password length
+            if (request.getNewPassword().length() < 6) {
+                return ResponseEntity.badRequest().body(Collections.singletonMap("error", "New password must be at least 6 characters long"));
+            }
+
+            // Find user by email
+            User user = userService.findByEmail(request.getEmail().trim());
+            if (user == null) {
+                return ResponseEntity.badRequest().body(Collections.singletonMap("error", "No account found with this email address"));
+            }
+
+            // Reset password with OTP
+            boolean success = userService.resetPasswordWithOtp(
+                request.getEmail().trim(), 
+                request.getOtp().trim(), 
+                request.getNewPassword()
+            );
+
+            if (success) {
+                // Send confirmation email
+                emailService.sendPasswordChangedConfirmationEmail(user.getEmail(), user.getUsername());
+                
+                return ResponseEntity.ok(Collections.singletonMap("message", "Password reset successfully. A confirmation email has been sent."));
+            } else {
+                return ResponseEntity.badRequest().body(Collections.singletonMap("error", "Invalid or expired OTP"));
+            }
+
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Collections.singletonMap("error", "An error occurred while resetting password: " + e.getMessage()));
+        }
+    }
 }

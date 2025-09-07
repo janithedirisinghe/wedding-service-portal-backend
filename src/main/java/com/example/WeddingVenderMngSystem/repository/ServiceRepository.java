@@ -9,4 +9,6 @@ import java.util.List;
 @Repository
 public interface ServiceRepository extends JpaRepository<Service, Long> {
     List<Service> findByVendor_VenderId(Long vendorId);
+    // Only non-deleted services
+    List<Service> findByVendor_VenderIdAndIsDeletedFalse(Long vendorId);
 }

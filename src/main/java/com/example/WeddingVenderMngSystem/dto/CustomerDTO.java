@@ -1,0 +1,170 @@
+package com.example.WeddingVenderMngSystem.dto;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.util.Date;
+import java.util.List;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class CustomerDTO {
+    private Long customerId;
+    
+    // Personal Information
+    private String firstName;
+    private String lastName;
+    private Date dateOfBirth;
+    private String phoneNumber;
+    private String bio;
+
+    // Address Information
+    private String address;
+    private String city;
+    private String country;
+    private String location; // Keep for backward compatibility
+
+    // Wedding Information
+    private Date weddingDate;
+    private String budget; // Changed from Double to String for budget ranges
+    
+    // Profile Image
+    private String profileImageUrl;
+    
+    // Vendor Preferences
+    private List<String> preferredVendorTypes;
+
+    // User Information
+    private String userName;
+    private String userEmail;
+
+    public Long getCustomerId() {
+        return customerId;
+    }
+
+    public void setCustomerId(Long customerId) {
+        this.customerId = customerId;
+    }
+
+    public String getFirstName() {
+        return firstName;
+    }
+
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
+    }
+
+    public String getLastName() {
+        return lastName;
+    }
+
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
+    }
+
+    public Date getDateOfBirth() {
+        return dateOfBirth;
+    }
+
+    public void setDateOfBirth(Date dateOfBirth) {
+        this.dateOfBirth = dateOfBirth;
+    }
+
+    public String getPhoneNumber() {
+        return phoneNumber;
+    }
+
+    public void setPhoneNumber(String phoneNumber) {
+        this.phoneNumber = phoneNumber;
+    }
+
+    public String getBio() {
+        return bio;
+    }
+
+    public void setBio(String bio) {
+        this.bio = bio;
+    }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
+    }
+
+    public String getCity() {
+        return city;
+    }
+
+    public void setCity(String city) {
+        this.city = city;
+    }
+
+    public String getCountry() {
+        return country;
+    }
+
+    public void setCountry(String country) {
+        this.country = country;
+    }
+
+    public String getLocation() {
+        return location;
+    }
+
+    public void setLocation(String location) {
+        this.location = location;
+    }
+
+    public Date getWeddingDate() {
+        return weddingDate;
+    }
+
+    public void setWeddingDate(Date weddingDate) {
+        this.weddingDate = weddingDate;
+    }
+
+    public String getBudget() {
+        return budget;
+    }
+
+    public void setBudget(String budget) {
+        this.budget = budget;
+    }
+
+    public String getProfileImageUrl() {
+        return profileImageUrl;
+    }
+
+    public void setProfileImageUrl(String profileImageUrl) {
+        this.profileImageUrl = profileImageUrl;
+    }
+
+    public List<String> getPreferredVendorTypes() {
+        return preferredVendorTypes;
+    }
+
+    public void setPreferredVendorTypes(List<String> preferredVendorTypes) {
+        this.preferredVendorTypes = preferredVendorTypes;
+    }
+
+    public String getUserName() {
+        return userName;
+    }
+
+    public void setUserName(String userName) {
+        this.userName = userName;
+    }
+
+    public String getUserEmail() {
+        return userEmail;
+    }
+
+    public void setUserEmail(String userEmail) {
+        this.userEmail = userEmail;
+    }
+}

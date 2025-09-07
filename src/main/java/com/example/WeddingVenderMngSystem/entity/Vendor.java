@@ -21,12 +21,20 @@ public class Vendor {
     private String availability;
 
     private String Location;
-    private  String BRN;
+    private String BRN;
     private String Country;
     @JsonProperty("VenType") // Ensures JSON maps correctly
     private String venType;   // Changed from "VenType" to "venType"
     private String bio;
     private String telNo;
+    private String profileImageUrl;
+
+    // Add to Vendor entity
+    @Column(name = "is_active", nullable = false, columnDefinition = "BOOLEAN DEFAULT true")
+    private Boolean isActive = true;
+
+    @Column(name = "verify", nullable = false, columnDefinition = "BOOLEAN DEFAULT false") 
+    private Boolean verify = false;
 
     @OneToOne
     @JsonIgnore
@@ -40,6 +48,11 @@ public class Vendor {
     @ManyToOne
     @JoinColumn(name = "admin_id")
     private Admin admin;
+
+    // Follower relationships
+    @OneToMany(mappedBy = "vendor", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonIgnore
+    private List<Follower> followers;
 
     public void setUser(User user) {
         this.user = user;
@@ -75,6 +88,10 @@ public class Vendor {
 
     public void setTelNo(String telNo) {
         this.telNo = telNo;
+    }
+
+    public void setProfileImageUrl(String profileImageUrl) {
+        this.profileImageUrl = profileImageUrl;
     }
 
 
@@ -115,6 +132,10 @@ public class Vendor {
         return telNo;
     }
 
+    public String getProfileImageUrl() {
+        return profileImageUrl;
+    }
+
     public String getVenType() { return venType; }
 
 
@@ -129,5 +150,50 @@ public class Vendor {
 
     public Admin getAdmin() {
         return admin;
+    }
+
+    public List<Follower> getFollowers() {
+        return followers;
+    }
+
+    public void setFollowers(List<Follower> followers) {
+        this.followers = followers;
+    }
+
+    // Chat room relationships
+    @OneToMany(mappedBy = "vendor", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonIgnore
+    private List<ChatRoom> chatRooms;
+
+    public List<ChatRoom> getChatRooms() {
+        return chatRooms;
+    }
+
+    public Boolean getActive() {
+        return isActive;
+    }
+
+    public void setActive(Boolean active) {
+        isActive = active;
+    }
+
+    public Boolean getVerify() {
+        return verify;
+    }
+
+    public void setVerify(Boolean verify) {
+        this.verify = verify;
+    }
+
+    public void setServices(List<Service> services) {
+        this.services = services;
+    }
+
+    public void setAdmin(Admin admin) {
+        this.admin = admin;
+    }
+
+    public void setChatRooms(List<ChatRoom> chatRooms) {
+        this.chatRooms = chatRooms;
     }
 }

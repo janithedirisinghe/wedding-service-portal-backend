@@ -39,8 +39,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         String requestPath = request.getServletPath();
 
-        // ✅ Skip JWT authentication for public endpoints
-        if (requestPath.startsWith("/auth/")) {
+        // ✅ Skip JWT authentication for public endpoints only
+        if (requestPath.equals("/auth/login") || 
+            requestPath.equals("/auth/register") || 
+            requestPath.equals("/auth/verify-otp") || 
+            requestPath.equals("/auth/vendor-complete-info") || 
+            requestPath.startsWith("/auth/customer-profile")) {
             filterChain.doFilter(request, response);
             return;
         }
@@ -55,6 +59,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             return;
         }
 
+        if (requestPath.startsWith("/ws/")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
 //        if (requestPath.startsWith("/vendors/")) {
 //            filterChain.doFilter(request, response);
 //            return;
@@ -62,14 +71,22 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         // ✅ Extract and validate JWT token
         String token = getTokenFromRequest(request);
-        if (token != null && jwtUtil.validateToken(token, jwtUtil.extractUsername(token))) {
-            String username = jwtUtil.extractUsername(token);
-            UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+        if (token != null) {
+            try {
+                String username = jwtUtil.extractUsername(token);
+                if (username != null && jwtUtil.validateToken(token, username)) {
+                    UserDetails userDetails = userDetailsService.loadUserByUsername(username);
 
-            UsernamePasswordAuthenticationToken authentication =
-                    new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+                    UsernamePasswordAuthenticationToken authentication =
+                            new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
 
-            SecurityContextHolder.getContext().setAuthentication(authentication);
+                    SecurityContextHolder.getContext().setAuthentication(authentication);
+                }
+            } catch (Exception e) {
+                System.err.println("JWT Authentication failed: " + e.getMessage());
+                // Clear any existing authentication
+                SecurityContextHolder.clearContext();
+            }
         }
 
         filterChain.doFilter(request, response);
